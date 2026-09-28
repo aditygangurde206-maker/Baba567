@@ -1,0 +1,3029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#FFC107">
+    <title>Baba567 - User Panel</title>
+
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Local QR Code Generator Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        :root { 
+            --primary: #FFC107; 
+            --primary-dark: #FFA000; 
+            --primary-light: #FFF8E1; 
+            --header-gradient: linear-gradient(135deg, #FFD54F 0%, #FFA000 100%); 
+            --black: #0A0A0A; 
+            --dark: #1A1A1A; 
+            --gray-900: #212121; 
+            --gray-800: #424242; 
+            --gray-700: #616161; 
+            --gray-600: #757575; 
+            --gray-500: #9E9E9E; 
+            --gray-400: #BDBDBD; 
+            --gray-300: #E0E0E0; 
+            --gray-200: #EEEEEE; 
+            --gray-100: #F5F5F5; 
+            --white: #FFFFFF; 
+            --success: #4CAF50; 
+            --success-light: #E8F5E9; 
+            --warning: #FF9800; 
+            --warning-light: #FFF3E0; 
+            --error: #F44336; 
+            --error-light: #FFEBEE; 
+            --info: #2196F3; 
+            --info-light: #E3F2FD; 
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.06); 
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.08); 
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.1); 
+            --shadow-xl: 0 12px 24px rgba(0,0,0,0.12); 
+            --shadow-teal: 0 4px 16px rgba(255, 193, 7, 0.25); 
+            --radius-sm: 8px; 
+            --radius-md: 12px; 
+            --radius-lg: 16px; 
+            --radius-xl: 20px; 
+            --radius-2xl: 24px; 
+            --radius-full: 9999px; 
+            --play-green: #4CAF50; 
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', Roboto, sans-serif; background: #000; display: flex; justify-content: center; align-items: center; min-height: 100vh; -webkit-font-smoothing: antialiased; user-select: none; -webkit-user-select: none; -webkit-tap-highlight-color: transparent; }
+        .app-container { width: 100%; max-width: 430px; height: 100vh; max-height: 932px; background: #F0F4F8; position: relative; overflow: hidden; box-shadow: 0 0 60px rgba(255, 193, 7, 0.15); }
+        @media (min-width: 431px) { body { padding: 20px; } .app-container { border-radius: 40px; height: 90vh; } }
+        .screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #F0F4F8; display: none; flex-direction: column; overflow: hidden; }
+        .screen.active { display: flex; }
+        .screen-content { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: 80px; }
+        .screen-content::-webkit-scrollbar { width: 0; }
+        .home-header { background: var(--header-gradient); padding: 8px 16px; display: flex; align-items: center; justify-content: space-between; position: relative; box-shadow: 0 4px 16px rgba(255, 193, 7, 0.3); z-index: 10; flex-shrink: 0; }
+        .menu-icon { font-size: 22px; color: white; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,0.15); transition: all 0.2s; }
+        .menu-icon:active { background: rgba(255,255,255,0.25); }
+        .brand-center { display: flex; align-items: center; gap: 6px; }
+        .brand-logo-small { background: white; color: #FFA000; width: 32px; height: 32px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .brand-text { font-weight: 800; font-size: 18px; color: white; letter-spacing: -0.5px; }
+        .header-actions { display: flex; align-items: center; gap: 8px; }
+        
+        .wallet-badge-header { 
+            background: #FFFFFF; 
+            padding: 3px 8px 3px 6px; 
+            border-radius: 50px; 
+            display: flex; 
+            align-items: center; 
+            gap: 3px; 
+            color: #000000; 
+            font-weight: 900; 
+            font-size: 11px; 
+            cursor: pointer; 
+            border: 2px solid #000000; 
+            transition: all 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+        .wallet-badge-header:active { transform: scale(0.96); }
+        .wallet-badge-header .wallet-icon-box {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 15px;
+            height: 15px;
+        }
+        .wallet-badge-header .wallet-icon-box i {
+            font-size: 12px;
+            color: #000000;
+        }
+        .wallet-badge-header .currency-symbol {
+            font-size: 12px;
+            font-weight: 900;
+            color: #000000;
+            margin-left: 1px;
+            margin-right: -1px;
+        }
+        .wallet-badge-header .balance-amount {
+            font-size: 12px;
+            font-weight: 900;
+            color: #000000;
+            letter-spacing: 0.1px;
+        }
+        
+        .notif-icon { color: white; font-size: 20px; position: relative; cursor: pointer; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 50%; background: rgba(255,255,255,0.15); transition: all 0.2s; }
+        .notif-icon:active { background: rgba(255,255,255,0.25); }
+        .badge-dot { width: 8px; height: 8px; background: #FFD700; border-radius: 50%; position: absolute; top: 5px; right: 6px; border: 2px solid rgba(255, 193, 7, 0.8); }
+        .welcome-section { background: white; margin: 6px 10px; padding: 10px 14px; border-radius: 16px; box-shadow: var(--shadow-sm); text-align: center; border: 1px solid #E8EDF2; flex-shrink: 0; }
+        .welcome-text { font-weight: 700; font-size: 14px; color: #1E293B; margin-bottom: 8px; line-height: 1.3; letter-spacing: -0.2px; }
+        .market-list-section { padding: 0 8px 20px; }
+        .section-title { font-size: 15px; font-weight: 800; color: #1E293B; margin-bottom: 6px; padding: 0 4px; }
+        .market-card-new { background: white; border-radius: 14px; padding: 8px 10px; margin-bottom: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); display: flex; align-items: center; justify-content: space-between; border: 1px solid #E8EDF2; transition: all 0.2s; cursor: default; min-height: 100px; }
+        .market-card-new:active { transform: scale(0.99); }
+        .market-left { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+        .market-icon { width: 36px; height: 36px; background: #F1F5F9; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #64748B; font-size: 16px; flex-shrink: 0; }
+        .market-info-text { flex: 1; min-width: 0; }
+        .market-info-text h4 { font-weight: 700; font-size: 13px; color: #0F172A; margin-bottom: 1px; letter-spacing: -0.3px; }
+        .market-result-value { font-size: 15px; font-weight: 800; font-family: 'Courier New', monospace; letter-spacing: 1px; color: #1E293B; margin-bottom: 3px; line-height: 1.1; }
+        .market-status-badge { font-size: 9px; font-weight: 700; color: #16A34A; background: #F0FDF4; padding: 2px 6px; border-radius: 20px; display: inline-block; margin-bottom: 3px; letter-spacing: 0.3px; }
+        .market-status-badge.closed { color: #DC2626; background: #FEF2F2; font-weight: 800; }
+        .market-status-badge.upcoming { color: #D97706; background: #FFFBEB; }
+        .market-status-closed-bold { font-size: 12px; font-weight: 800; color: #DC2626; margin-bottom: 6px; display: inline-block; letter-spacing: 0.2px; }
+        .market-timing-row { display: flex; gap: 10px; margin-top: 1px; font-size: 10px; font-weight: 600; color: #64748B; }
+        .market-timing-row span { display: flex; align-items: center; gap: 2px; }
+        .play-circle-btn { background: var(--play-green); width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; box-shadow: 0 6px 18px rgba(76,175,80,0.35); cursor: pointer; transition: all 0.2s; border: none; flex-shrink: 0; margin-left: 6px; }
+        .play-circle-btn:active { transform: scale(0.93); box-shadow: 0 4px 12px rgba(76,175,80,0.4); }
+        .play-circle-btn.disabled { background: #CBD5E1 !important; box-shadow: none !important; pointer-events: none !important; cursor: not-allowed !important; color: #94A3B8 !important; }
+        .closed-circle-btn { width: 42px; height: 42px; border-radius: 50%; background: #DC2626; display: flex; align-items: center; justify-content: center; color: white; font-size: 20px; box-shadow: 0 6px 18px rgba(220,38,38,0.35); flex-shrink: 0; margin-left: 6px; }
+        .auth-screen { background: #FFFFFF; padding: 40px 24px; display: flex; flex-direction: column; justify-content: center; min-height: 100%; }
+        .auth-header { text-align: center; margin-bottom: 40px; }
+        .logo-wrapper { width: 90px; height: 90px; background: linear-gradient(135deg, #FFD54F 0%, #FFA000 100%); border-radius: 28px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 10px 40px rgba(255, 193, 7, 0.35); animation: logoFloat 3s ease-in-out infinite; }
+        @keyframes logoFloat { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .logo-text { color: white; font-size: 32px; font-weight: 900; letter-spacing: -2px; }
+        .auth-title { font-size: 32px; font-weight: 800; color: var(--gray-900); letter-spacing: -1px; margin-bottom: 8px; }
+        .auth-subtitle { color: var(--gray-500); font-size: 15px; font-weight: 500; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 14px; font-weight: 600; color: var(--gray-800); margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 16px; background: var(--gray-100); border: 2px solid transparent; border-radius: var(--radius-lg); font-size: 16px; font-weight: 500; color: var(--gray-900); transition: all 0.3s; outline: none; font-family: inherit; }
+        .form-input:focus { background: white; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.1); }
+        .form-input::placeholder { color: var(--gray-400); }
+        .btn { width: 100%; padding: 16px; border: none; border-radius: var(--radius-lg); font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:active { transform: scale(0.98); }
+        .btn-primary { background: var(--primary); color: white; box-shadow: var(--shadow-teal); }
+        .btn-outline { background: white; color: var(--primary); border: 2px solid var(--primary); }
+        .btn-dark { background: var(--dark); color: white; }
+        .btn-ghost { background: transparent; color: var(--gray-700); }
+        .btn-danger { background: var(--error); color: white; }
+        .auth-link { text-align: center; margin-top: 20px; color: var(--gray-600); font-size: 15px; }
+        .auth-link span { color: var(--primary); font-weight: 700; cursor: pointer; }
+        
+        .dashboard-header { 
+            background: var(--header-gradient); 
+            padding: 16px 20px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            position: relative; 
+            box-shadow: 0 4px 16px rgba(255, 193, 7, 0.3);
+        }
+        .dashboard-header .back-btn { 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            background: #FFFFFF; 
+            border: none; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            color: #000000; 
+            font-size: 18px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .dashboard-header .dashboard-title { 
+            color: #000000; 
+            font-weight: 800; 
+            font-size: 18px; 
+            flex: 1; 
+        }
+        
+        .play-header { 
+            background: var(--header-gradient); 
+            padding: 16px 20px; 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+            position: relative; 
+            box-shadow: 0 4px 16px rgba(255, 193, 7, 0.3);
+        }
+        .play-header .back-btn { 
+            width: 40px; 
+            height: 40px; 
+            border-radius: 50%; 
+            background: #FFFFFF; 
+            border: none; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            cursor: pointer; 
+            color: #000000; 
+            font-size: 18px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+        }
+        .play-header .play-market-title { 
+            color: #000000; 
+            font-weight: 800; 
+            font-size: 16px; 
+            flex: 1; 
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .dashboard-result-card { background: #FFF9E6; border: 1px solid #F0D870; border-radius: 14px; padding: 16px 20px; margin: 16px 20px; text-align: center; }
+        .dashboard-result-card .result-header { display: flex; justify-content: center; align-items: center; gap: 8px; margin-bottom: 12px; }
+        .dashboard-result-card .result-title { font-weight: 700; font-size: 14px; color: #E65100; }
+        .dashboard-result-card .result-date { font-size: 11px; color: #999; font-weight: 500; }
+        .dashboard-result-card .result-numbers { display: flex; justify-content: center; align-items: center; gap: 24px; }
+        .dashboard-result-card .result-block { text-align: center; }
+        .dashboard-result-card .result-block-label { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin-bottom: 4px; }
+        .dashboard-result-card .result-block-label.open { color: #E53935; }
+        .dashboard-result-card .result-block-label.close { color: #43A047; }
+        .dashboard-result-card .result-block-value { font-size: 18px; font-weight: 800; font-family: 'Courier New', monospace; letter-spacing: 1px; padding: 6px 16px; background: white; border-radius: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+        .dashboard-result-card .result-block-value.open-val { color: #E53935; }
+        .dashboard-result-card .result-block-value.close-val { color: #43A047; }
+        .dashboard-result-card .result-vs { font-size: 13px; font-weight: 700; color: #bbb; }
+        .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; padding: 20px; }
+        .dashboard-card { background: white; border-radius: var(--radius-lg); padding: 20px 16px; box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200); cursor: pointer; transition: all 0.3s; text-align: center; position: relative; overflow: hidden; }
+        .dashboard-card:active { transform: scale(0.97); box-shadow: var(--shadow-md); }
+        .dashboard-card-icon { width: 50px; height: 50px; border-radius: 14px; background: var(--primary-light); display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; font-size: 24px; color: var(--primary-dark); }
+        .dashboard-card-title { font-size: 15px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
+        .dashboard-card-subtitle { font-size: 12px; color: var(--gray-500); font-weight: 500; }
+        .special-bet-section { padding: 16px 20px; }
+        .special-bet-title { font-weight: 800; font-size: 18px; color: var(--gray-900); margin-bottom: 16px; }
+        .number-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 16px; }
+        .number-btn { padding: 14px 8px; background: var(--gray-100); border: 2px solid var(--gray-300); border-radius: var(--radius-md); font-weight: 700; font-size: 16px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .number-btn:active { transform: scale(0.95); }
+        .number-btn.selected { background: var(--primary-light); border-color: var(--primary); color: var(--primary-dark); }
+        .points-input-group { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; }
+        .points-input-group label { font-weight: 600; font-size: 14px; color: var(--gray-700); }
+        .points-input-group input { flex: 1; padding: 12px; border-radius: var(--radius-md); border: 2px solid var(--gray-300); font-weight: 600; font-size: 14px; outline: none; }
+        .points-input-group input:focus { border-color: var(--primary); }
+        .submit-section { padding: 16px 20px; }
+        .tournament-card { background: white; border-radius: var(--radius-xl); padding: 20px; margin-bottom: 14px; box-shadow: var(--shadow-sm); border: 1px solid var(--gray-200); transition: all 0.3s; position: relative; }
+        .bottom-nav { display: flex; justify-content: space-around; align-items: center; padding: 10px 4px 16px; background: rgba(255,255,255,0.98); backdrop-filter: blur(20px); border-top: 1px solid #E8EDF2; position: absolute; bottom: 0; width: 100%; box-shadow: 0 -2px 10px rgba(0,0,0,0.04); }
+        .nav-item { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; padding: 8px 4px; border-radius: 16px; transition: all 0.3s; position: relative; flex: 1 1 0; width: 25%; max-width: 25%; box-sizing: border-box; min-width: 0; }
+        .nav-item i { font-size: 20px; color: #94A3B8; transition: all 0.3s; }
+        .nav-item span { font-size: 11px; font-weight: 600; color: #94A3B8; transition: all 0.3s; white-space: nowrap; }
+        .nav-item.active { background: var(--primary-light); }
+        .nav-item.active i, .nav-item.active span { color: #FFA000; }
+        .balance-card { background: linear-gradient(135deg, #FFC107, #FFA000); border-radius: var(--radius-2xl); padding: 30px; color: white; text-align: center; margin-bottom: 24px; box-shadow: var(--shadow-teal); }
+        .balance-label { font-size: 14px; opacity: 0.9; font-weight: 500; }
+        .balance-amount { font-size: 48px; font-weight: 900; letter-spacing: -2px; margin: 8px 0; }
+        .user-id { font-size: 13px; opacity: 0.8; background: rgba(255,255,255,0.2); padding: 6px 14px; border-radius: 50px; display: inline-block; }
+        .wallet-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+        .wallet-btn { padding: 16px; border-radius: var(--radius-lg); font-weight: 700; font-size: 15px; cursor: pointer; border: none; display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s; }
+        .wallet-btn:active { transform: scale(0.98); }
+        .add-money-btn { background: var(--success); color: white; }
+        .withdraw-btn { background: var(--dark); color: white; }
+        .transaction-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid var(--gray-200); }
+        .transaction-info h4 { font-weight: 700; color: var(--gray-900); margin-bottom: 4px; font-size: 15px; }
+        .transaction-info p { font-size: 13px; color: var(--gray-500); }
+        .transaction-amount { font-weight: 800; font-size: 16px; }
+        .transaction-amount.credit { color: var(--success); }
+        .transaction-amount.debit { color: var(--error); }
+        .status-badge { padding: 4px 12px; border-radius: 50px; font-size: 11px; font-weight: 700; display: inline-block; }
+        .status-badge.success { background: var(--success-light); color: var(--success); }
+        .status-badge.pending { background: var(--warning-light); color: var(--warning); }
+        .status-badge.failed { background: var(--error-light); color: var(--error); }
+        .status-badge.won { background: #E8F5E9; color: #2E7D32; }
+        .status-badge.lost { background: #FFEBEE; color: #C62828; }
+        .status-badge.completed { background: var(--success-light); color: var(--success); }
+        .status-badge.rejected { background: var(--error-light); color: var(--error); }
+        .status-badge.cancelled { background: var(--gray-200); color: var(--gray-700); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; }
+        .modal-overlay.active { display: flex; }
+        .modal-content { background: white; border-radius: var(--radius-2xl); padding: 28px; width: 100%; max-width: 360px; max-height: 80vh; overflow-y: auto; box-shadow: var(--shadow-xl); animation: modalSlideUp 0.3s ease; }
+        @keyframes modalSlideUp { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .modal-title { font-size: 22px; font-weight: 800; color: var(--gray-900); margin-bottom: 20px; }
+        .toast { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: var(--gray-900); color: white; padding: 14px 24px; border-radius: 50px; font-weight: 600; font-size: 14px; z-index: 2000; box-shadow: var(--shadow-lg); animation: toastIn 0.3s ease; white-space: nowrap; }
+        @keyframes toastIn { from { opacity: 0; transform: translateX(-50%) translateY(-20px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+        .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-state { text-align: center; padding: 40px 20px; color: var(--gray-500); }
+        .empty-state i { font-size: 48px; margin-bottom: 16px; opacity: 0.5; }
+        .warning-banner { background: #FFF3E0; border: 1px solid #FFE0B2; border-radius: var(--radius-lg); padding: 6px 10px; margin-bottom: 6px; display: flex; align-items: center; gap: 8px; font-size: 11px; color: #E65100; font-weight: 500; }
+        .upi-id-box { background: var(--gray-100); padding: 14px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: space-between; margin: 10px 0; font-weight: 600; word-break: break-all; }
+        .copy-btn { background: var(--primary-light); color: var(--primary-dark); border: none; padding: 8px 14px; border-radius: 20px; font-weight: 700; cursor: pointer; font-size: 13px; }
+        .upi-apps { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin: 16px 0; }
+        .upi-app-btn { background: white; border: 2px solid var(--gray-300); border-radius: var(--radius-md); padding: 12px 16px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; font-weight: 600; font-size: 12px; transition: 0.2s; }
+        .upi-app-btn:active { background: var(--gray-100); }
+        .upi-app-btn.selected { border-color: var(--primary); background: var(--primary-light); }
+        .selected-numbers { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+        .selected-number-chip { background: var(--primary-light); color: var(--primary-dark); padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 6px; }
+        .qr-image { width: 200px; height: 200px; object-fit: contain; border-radius: 12px; margin: 10px auto; display: block; border: 2px solid var(--gray-200); }
+        .result-history-item { background: var(--gray-100); border-radius: var(--radius-md); padding: 10px 12px; margin-bottom: 8px; }
+        .result-history-item .result-date { font-size: 11px; color: var(--gray-600); margin-bottom: 4px; }
+        .result-history-item .result-values { display: flex; gap: 12px; font-family: 'Courier New', monospace; font-size: 14px; font-weight: 700; }
+        .result-history-item .open-val { color: #FF3B30; }
+        .result-history-item .close-val { color: #4CAF50; }
+        .bid-item { background: white; border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: 12px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .bid-item-number { font-weight: 700; font-size: 16px; }
+        .bid-item-remove { background: var(--error-light); color: var(--error); border: none; padding: 6px 12px; border-radius: 20px; cursor: pointer; }
+        .bid-summary { background: var(--gray-100); border-radius: var(--radius-lg); padding: 16px; margin-top: 16px; }
+        .bid-summary-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-weight: 600; }
+        .bid-summary-total { font-size: 18px; font-weight: 800; color: var(--primary-dark); }
+        .digit-grid-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+        .digit-card { background: var(--gray-100); border: 2px solid var(--gray-300); border-radius: var(--radius-md); padding: 10px; }
+        .digit-card.selected { border-color: var(--primary); background: var(--primary-light); }
+        .digit-card-number { font-size: 24px; font-weight: 800; }
+        .digit-card input { width: 100%; padding: 8px; border: 2px solid var(--gray-300); border-radius: var(--radius-sm); font-weight: 600; text-align: center; }
+        .bid-table { width: 100%; border-collapse: collapse; }
+        .bid-table th { background: var(--gray-100); padding: 10px; text-align: left; font-weight: 700; font-size: 13px; }
+        .bid-table td { padding: 10px; border-bottom: 1px solid var(--gray-200); font-weight: 600; }
+        .bid-table .remove-btn { color: var(--error); background: none; border: none; cursor: pointer; }
+        .select-field { width: 100%; padding: 12px; border: 2px solid var(--gray-300); border-radius: var(--radius-md); font-weight: 600; outline: none; }
+        .bid-type-btn { flex: 1; padding: 12px; border: 2px solid var(--gray-300); border-radius: var(--radius-md); background: white; color: var(--gray-700); font-weight: 700; cursor: pointer; transition: all 0.2s; }
+        .bid-type-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        /* ===== SPLASH SCREEN ===== */
+        .splash-screen-new { width: 100%; height: 100%; background: #FFFFFF; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; }
+        .splash-circle-top-left { position: absolute; top: -80px; left: -80px; width: 320px; height: 320px; border-radius: 50%; background: #FFF3C4; opacity: 0.8; }
+        .splash-circle-top-left-inner { position: absolute; top: -40px; left: -40px; width: 240px; height: 240px; border-radius: 50%; background: #FFE082; opacity: 0.6; }
+        .splash-circle-bottom-right { position: absolute; bottom: -100px; right: -100px; width: 350px; height: 350px; border-radius: 50%; background: #FFF3C4; opacity: 0.8; }
+        .splash-circle-bottom-right-inner { position: absolute; bottom: -50px; right: -50px; width: 260px; height: 260px; border-radius: 50%; background: #FFE082; opacity: 0.6; }
+        .splash-content-new { position: relative; z-index: 10; text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .splash-logo-row { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; }
+        .splash-logo-box { width: 72px; height: 72px; background: linear-gradient(135deg, #FFD54F 0%, #FFA000 100%); border-radius: 20px; display: flex; align-items: center; justify-content: center; color: white; font-weight: 900; font-size: 28px; box-shadow: 0 8px 24px rgba(255, 193, 7, 0.35); }
+        .splash-brand-text { font-size: 32px; font-weight: 800; color: #1A1A1A; letter-spacing: -1px; }
+        .splash-brand-text span { color: #FFC107; }
+        .splash-loader-new { margin-top: 10px; }
+        .splash-spinner-new { width: 40px; height: 40px; border-radius: 50%; border: 4px solid #FFF3C4; border-top-color: #FFC107; animation: spin 0.8s linear infinite; margin: 0 auto; }
+
+        /* ===== AUTH SCREEN ===== */
+        .auth-screen-new { background: #FFFFFF; padding: 40px 24px; display: flex; flex-direction: column; justify-content: center; min-height: 100%; }
+        .auth-header-new { text-align: center; margin-bottom: 40px; }
+        .logo-wrapper-new { width: 90px; height: 90px; background: linear-gradient(135deg, #FFD54F 0%, #FFA000 100%); border-radius: 28px; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 10px 40px rgba(255, 193, 7, 0.35); }
+        .logo-text-new { color: white; font-size: 32px; font-weight: 900; letter-spacing: -2px; }
+        .auth-title-new { font-size: 32px; font-weight: 800; color: #1A1A1A; letter-spacing: -1px; margin-bottom: 8px; }
+        .auth-subtitle-new { color: var(--gray-500); font-size: 15px; font-weight: 500; }
+        .form-group-new { margin-bottom: 20px; }
+        .form-label-new { display: block; font-size: 14px; font-weight: 600; color: #1A1A1A; margin-bottom: 8px; }
+        .form-input-new { width: 100%; padding: 16px; background: #F5F5F5; border: 2px solid transparent; border-radius: 16px; font-size: 16px; font-weight: 500; color: #1A1A1A; transition: all 0.3s; outline: none; font-family: inherit; }
+        .form-input-new:focus { background: white; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.1); }
+        .form-input-new::placeholder { color: #BDBDBD; }
+        .btn-primary-new { width: 100%; padding: 16px; border: none; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; transition: all 0.2s; font-family: inherit; display: flex; align-items: center; justify-content: center; gap: 8px; background: var(--primary); color: white; box-shadow: var(--shadow-teal); }
+        .btn-primary-new:active { transform: scale(0.98); }
+        .auth-link-new { text-align: center; margin-top: 20px; color: var(--gray-600); font-size: 15px; }
+        .auth-link-new span { color: var(--primary); font-weight: 700; cursor: pointer; }
+
+        /* ===== WIN RATIO / GAME RATES ===== */
+        .win-ratio-screen { background: #F0F4F8; display: flex; flex-direction: column; height: 100%; }
+        .win-ratio-header { background: var(--header-gradient); padding: 16px 20px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 16px rgba(255, 193, 7, 0.3); }
+        .win-ratio-back { width: 40px; height: 40px; border-radius: 50%; background: rgba(255,255,255,0.15); border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; color: white; font-size: 18px; transition: all 0.2s; }
+        .win-ratio-back:active { background: rgba(255,255,255,0.25); }
+        .win-ratio-title { color: white; font-weight: 800; font-size: 20px; flex: 1; }
+        .win-ratio-content { flex: 1; overflow-y: auto; padding: 24px 20px; display: flex; flex-direction: column; align-items: center; }
+        .win-ratio-card { background: white; border-radius: 20px; padding: 24px 20px; width: 100%; max-width: 400px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); border: 1px solid #E8EDF2; }
+        .win-ratio-heading { font-size: 18px; font-weight: 800; color: #1E293B; text-align: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 2px solid #E2E8F0; }
+        .win-ratio-item { display: flex; justify-content: space-between; align-items: center; padding: 16px 0; border-bottom: 1px solid #E8EDF2; gap: 10px; }
+        .win-ratio-item:last-child { border-bottom: none; }
+        .win-ratio-label { font-size: 15px; font-weight: 700; color: #475569; flex: 1; text-align: left; }
+        .win-ratio-rate { font-size: 15px; font-weight: 800; color: #FFA000; font-family: 'Courier New', monospace; flex: 0 0 auto; min-width: 70px; text-align: center; }
+        .win-ratio-value { font-size: 16px; font-weight: 800; color: #FFA000; font-family: 'Courier New', monospace; flex: 0 0 auto; min-width: 60px; text-align: right; }
+
+        /* ===== SINGLE DIGIT BOARD ===== */
+        .new-game-section { padding: 20px; }
+        .game-type-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #E2E8F0; }
+        .game-type-label { font-size: 16px; font-weight: 700; color: #94A3B8; }
+        .game-type-dropdown { display: flex; align-items: center; justify-content: space-between; background: white; border: 2px solid var(--primary); border-radius: 30px; padding: 10px 20px; min-width: 160px; cursor: pointer; font-weight: 700; font-size: 15px; color: #000; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2); }
+        .game-type-dropdown i { color: var(--primary-dark); font-size: 14px; margin-left: 8px; }
+        .new-digit-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 20px; }
+        .new-digit-pill { display: flex; align-items: center; background: white; border: 2px solid #E8EDF2; border-radius: 50px; padding: 8px 8px 8px 12px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); transition: all 0.2s; }
+        .new-digit-pill.selected { border-color: var(--primary); background: var(--primary-light); }
+        .new-digit-circle { width: 34px; height: 34px; border-radius: 50%; background: #F1F5F9; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px; color: #334155; flex-shrink: 0; margin-right: 8px; }
+        .new-digit-pill.selected .new-digit-circle { background: var(--primary); color: white; }
+        .new-digit-input { flex: 1; border: none; outline: none; background: transparent; font-size: 14px; font-weight: 600; color: #94A3B8; text-align: left; padding: 6px 0; font-family: inherit; min-width: 0; }
+        .new-digit-input::placeholder { color: #94A3B8; font-weight: 600; }
+        .new-digit-input:focus { color: #000; }
+        .new-bottom-bar { display: flex; align-items: center; justify-content: space-between; padding: 16px 20px; background: #F0F4F8; border-top: 1px solid #E2E8F0; position: sticky; bottom: 0; gap: 16px; }
+        .new-bottom-stat { display: flex; flex-direction: column; align-items: center; min-width: 60px; }
+        .new-bottom-stat-label { font-size: 13px; font-weight: 600; color: #64748B; margin-bottom: 4px; }
+        .new-bottom-stat-value { font-size: 18px; font-weight: 800; color: #0F172A; }
+        .new-submit-btn { flex: 1; background: var(--primary); color: white; border: none; border-radius: 30px; padding: 14px 20px; font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3); letter-spacing: 0.3px; }
+        .new-submit-btn:active { transform: scale(0.97); }
+
+        /* ===== JODI DIGIT ===== */
+        .jodi-input-box { border: 2px solid var(--primary); border-radius: 16px; padding: 16px; background: white; margin-bottom: 24px; }
+        .jodi-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .jodi-input-row:last-child { margin-bottom: 0; }
+        .jodi-input-label { font-size: 15px; font-weight: 600; color: #475569; flex: 0 0 100px; }
+        .jodi-input-field { flex: 1; padding: 12px 16px; border: 2px solid #CBD5E1; border-radius: 12px; font-size: 15px; font-weight: 600; color: #0F172A; outline: none; font-family: inherit; transition: all 0.2s; }
+        .jodi-input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.15); }
+        .jodi-add-btn { width: 100%; background: var(--primary); color: white; border: none; border-radius: 30px; padding: 14px; font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3); letter-spacing: 0.3px; }
+        .jodi-add-btn:active { transform: scale(0.97); }
+        .jodi-table-header { display: flex; justify-content: space-between; padding: 12px 4px; border-bottom: 1px solid #E2E8F0; margin-bottom: 16px; }
+        .jodi-table-header span { font-size: 14px; font-weight: 700; color: #0F172A; flex: 1; }
+        .jodi-table-header span:first-child { text-align: left; }
+        .jodi-table-header span:nth-child(2) { text-align: center; }
+        .jodi-table-header span:last-child { text-align: right; }
+        .jodi-entries-list { min-height: 100px; }
+
+        /* ===== PANA ===== */
+        .pana-input-box { border: 2px solid var(--primary); border-radius: 16px; padding: 16px; background: white; margin-bottom: 24px; }
+        .pana-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .pana-input-row:last-child { margin-bottom: 0; }
+        .pana-input-label { font-size: 15px; font-weight: 600; color: #475569; flex: 0 0 100px; }
+        .pana-input-field { flex: 1; padding: 12px 16px; border: 2px solid #CBD5E1; border-radius: 12px; font-size: 15px; font-weight: 600; color: #0F172A; outline: none; font-family: inherit; transition: all 0.2s; }
+        .pana-input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.15); }
+        .pana-add-btn { width: 100%; background: var(--primary); color: white; border: none; border-radius: 30px; padding: 14px; font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3); letter-spacing: 0.3px; }
+        .pana-add-btn:active { transform: scale(0.97); }
+        .pana-table-header { display: flex; justify-content: space-between; padding: 12px 4px; border-bottom: 1px solid #E2E8F0; margin-bottom: 16px; }
+        .pana-table-header span { font-size: 14px; font-weight: 700; color: #0F172A; flex: 1; text-align: center; }
+        .pana-table-header span:first-child { text-align: left; }
+        .pana-table-header span:last-child { text-align: right; }
+        .pana-entries-list { min-height: 100px; }
+
+        /* ===== SINGLE DIGIT BULK ===== */
+        .sdb-input-box { border: 2px solid var(--primary); border-radius: 16px; padding: 16px; background: white; margin-bottom: 24px; }
+        .sdb-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .sdb-input-row:last-child { margin-bottom: 0; }
+        .sdb-input-label { font-size: 15px; font-weight: 600; color: #475569; flex: 0 0 100px; }
+        .sdb-input-field { flex: 1; padding: 12px 16px; border: 2px solid #CBD5E1; border-radius: 12px; font-size: 15px; font-weight: 600; color: #0F172A; outline: none; font-family: inherit; transition: all 0.2s; }
+        .sdb-input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.15); }
+        .sdb-digit-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+        .sdb-digit-btn { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 18px 8px; font-size: 20px; font-weight: 800; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3); letter-spacing: 0.5px; }
+        .sdb-digit-btn:active { transform: scale(0.95); }
+        .sdb-digit-btn.selected { background: var(--primary-dark); box-shadow: 0 6px 16px rgba(255, 160, 0, 0.5); transform: scale(1.02); }
+        .sdb-digit-btn.zero { grid-column: 2 / 3; }
+
+        /* ===== JODI BULK ===== */
+        .jdb-input-box { border: 2px solid var(--primary); border-radius: 16px; padding: 16px; background: white; margin-bottom: 24px; }
+        .jdb-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .jdb-input-row:last-child { margin-bottom: 0; }
+        .jdb-input-label { font-size: 15px; font-weight: 600; color: #475569; flex: 0 0 100px; }
+        .jdb-input-field { flex: 1; padding: 12px 16px; border: 2px solid #CBD5E1; border-radius: 12px; font-size: 15px; font-weight: 600; color: #0F172A; outline: none; font-family: inherit; transition: all 0.2s; }
+        .jdb-input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.15); }
+        .jdb-add-btn { width: 100%; background: var(--primary); color: white; border: none; border-radius: 30px; padding: 14px; font-size: 16px; font-weight: 800; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3); letter-spacing: 0.3px; }
+        .jdb-add-btn:active { transform: scale(0.97); }
+        .jdb-table-header { display: flex; justify-content: space-between; padding: 12px 4px; border-bottom: 1px solid #E2E8F0; margin-bottom: 16px; }
+        .jdb-table-header span { font-size: 14px; font-weight: 700; color: #0F172A; flex: 1; }
+        .jdb-table-header span:first-child { text-align: left; }
+        .jdb-table-header span:nth-child(2) { text-align: center; }
+        .jdb-table-header span:last-child { text-align: right; }
+        .jdb-entries-list { min-height: 100px; }
+
+        /* ===== PANA BULK ===== */
+        .pana-bulk-input-box { border: 2px solid var(--primary); border-radius: 16px; padding: 16px; background: white; margin-bottom: 24px; }
+        .pana-bulk-input-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+        .pana-bulk-input-row:last-child { margin-bottom: 0; }
+        .pana-bulk-input-label { font-size: 15px; font-weight: 600; color: #475569; flex: 0 0 100px; }
+        .pana-bulk-input-field { flex: 1; padding: 12px 16px; border: 2px solid #CBD5E1; border-radius: 12px; font-size: 15px; font-weight: 600; color: #0F172A; outline: none; font-family: inherit; transition: all 0.2s; }
+        .pana-bulk-input-field:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(255, 193, 7, 0.15); }
+        .pana-bulk-digit-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 24px; }
+        .pana-bulk-digit-btn { background: var(--primary); color: white; border: none; border-radius: 12px; padding: 18px 8px; font-size: 20px; font-weight: 800; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3); letter-spacing: 0.5px; }
+        .pana-bulk-digit-btn:active { transform: scale(0.95); }
+        .pana-bulk-digit-btn.selected { background: var(--primary-dark); box-shadow: 0 6px 16px rgba(255, 160, 0, 0.5); transform: scale(1.02); }
+        .pana-bulk-table-header { display: flex; justify-content: space-between; padding: 12px 4px; border-bottom: 1px solid #E2E8F0; margin-bottom: 16px; }
+        .pana-bulk-table-header span { font-size: 14px; font-weight: 700; color: #0F172A; flex: 1; text-align: center; }
+        .pana-bulk-table-header span:first-child { text-align: left; }
+        .pana-bulk-table-header span:last-child { text-align: right; }
+        .pana-bulk-entries-list { min-height: 100px; }
+
+        /* ===== SIDE MENU DRAWER ===== */
+        .side-menu-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1500;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        .side-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        .side-menu-drawer {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 300px;
+            height: 100vh;
+            background: #FFFFFF;
+            z-index: 1600;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+            transition: left 0.3s ease;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+        .side-menu-drawer.active {
+            left: 0;
+        }
+        .side-menu-header {
+            background: linear-gradient(135deg, #FFD54F 0%, #FFA000 100%);
+            padding: 30px 20px 24px;
+            color: white;
+            position: relative;
+            box-shadow: 0 4px 16px rgba(255, 193, 7, 0.35);
+        }
+        .side-menu-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: #FFFFFF;
+            color: #FFA000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 14px;
+            border: 3px solid #FFFFFF;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .side-menu-username {
+            font-size: 18px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+            color: #FFFFFF;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        }
+        .side-menu-balance {
+            font-size: 15px;
+            font-weight: 700;
+            color: #FFFFFF;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+        }
+        .side-menu-balance span {
+            color: #FFFFFF;
+            font-weight: 800;
+        }
+        .side-menu-items {
+            flex: 1;
+            padding: 10px 0;
+            background: #FFFFFF;
+        }
+        .side-menu-item {
+            display: flex;
+            align-items: center;
+            padding: 18px 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-bottom: 1px solid #F1F5F9;
+            gap: 16px;
+        }
+        .side-menu-item:active {
+            background: #FFF8E1;
+        }
+        .side-menu-item i:first-child {
+            font-size: 20px;
+            color: #FFA000;
+            width: 24px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .side-menu-item span {
+            flex: 1;
+            font-size: 15px;
+            font-weight: 700;
+            color: #1E293B;
+            letter-spacing: 0.2px;
+        }
+        .side-menu-arrow {
+            font-size: 14px !important;
+            color: #FFC107 !important;
+            width: auto !important;
+        }
+        .side-menu-item:last-child {
+            border-bottom: none;
+        }
+
+        /* ===== NEW DEPOSIT MODAL STYLES ===== */
+        .deposit-modal-content {
+            background: #FFFFFF;
+            border-radius: 24px;
+            padding: 30px 24px 24px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            text-align: center;
+            animation: modalSlideUp 0.3s ease;
+        }
+        .deposit-icon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .deposit-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1E293B;
+            margin-bottom: 24px;
+            letter-spacing: -0.3px;
+        }
+        .deposit-input-wrapper {
+            margin-bottom: 20px;
+        }
+        .deposit-input-field {
+            width: 100%;
+            padding: 16px 20px;
+            background: #F8FAFC;
+            border: 2px solid #E2E8F0;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+            outline: none;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .deposit-input-field:focus {
+            border-color: #FFC107;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.1);
+        }
+        .deposit-input-field::placeholder {
+            color: #94A3B8;
+            font-weight: 500;
+        }
+        .deposit-amount-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .deposit-amount-btn {
+            padding: 18px 10px;
+            border: 2px solid #FFC107;
+            border-radius: 14px;
+            background: #FFFFFF;
+            color: #FFA000;
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        .deposit-amount-btn:active {
+            background: #FFF8E1;
+            transform: scale(0.97);
+        }
+        .deposit-submit-btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 30px;
+            background: #FFC107;
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .deposit-submit-btn:active {
+            transform: scale(0.98);
+        }
+        .deposit-cancel-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            background: transparent;
+            color: #64748B;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .deposit-cancel-btn:active {
+            color: #1E293B;
+        }
+
+        /* ===== NEW WITHDRAW MODAL STYLES ===== */
+        .withdraw-modal-content {
+            background: #FFFFFF;
+            border-radius: 24px;
+            padding: 30px 24px 24px;
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            text-align: center;
+            animation: modalSlideUp 0.3s ease;
+        }
+        .withdraw-icon-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .withdraw-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1E293B;
+            margin-bottom: 24px;
+            letter-spacing: -0.3px;
+        }
+        .withdraw-form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        .withdraw-label {
+            display: block;
+            font-size: 15px;
+            font-weight: 700;
+            color: #1E293B;
+            margin-bottom: 8px;
+        }
+        .withdraw-input-field {
+            width: 100%;
+            padding: 16px 20px;
+            background: #F8FAFC;
+            border: 2px solid #E2E8F0;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #1E293B;
+            outline: none;
+            font-family: inherit;
+            transition: all 0.2s;
+        }
+        .withdraw-input-field:focus {
+            border-color: #FFC107;
+            background: #FFFFFF;
+            box-shadow: 0 0 0 4px rgba(255, 193, 7, 0.1);
+        }
+        .withdraw-input-field::placeholder {
+            color: #94A3B8;
+            font-weight: 500;
+        }
+        .withdraw-helper-text {
+            font-size: 12px;
+            color: #64748B;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+        .withdraw-submit-btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 30px;
+            background: #FFC107;
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 6px 20px rgba(255, 193, 7, 0.4);
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+        .withdraw-submit-btn:active {
+            transform: scale(0.98);
+        }
+        .withdraw-cancel-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            background: transparent;
+            color: #64748B;
+            font-weight: 700;
+            font-size: 16px;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .withdraw-cancel-btn:active {
+            color: #1E293B;
+        }
+
+    </style>
+</head>
+<body>
+    <div class="app-container" id="app">
+        <!-- Splash Screen -->
+        <div id="splashScreen" class="screen active">
+            <div class="splash-screen-new">
+                <div class="splash-circle-top-left"></div>
+                <div class="splash-circle-top-left-inner"></div>
+                <div class="splash-circle-bottom-right"></div>
+                <div class="splash-circle-bottom-right-inner"></div>
+                <div class="splash-content-new">
+                    <div class="splash-logo-row">
+                        <div class="splash-logo-box">B5</div>
+                        <h1 class="splash-brand-text"><span>Baba</span>567</h1>
+                    </div>
+                    <div class="splash-loader-new">
+                        <div class="splash-spinner-new"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Login Screen -->
+        <div id="loginScreen" class="screen">
+            <div class="auth-screen-new">
+                <div class="auth-header-new">
+                    <div class="logo-wrapper-new"><span class="logo-text-new">B5</span></div>
+                    <h1 class="auth-title-new">Baba567</h1>
+                </div>
+                <div class="form-group-new">
+                    <label class="form-label-new">Email Address</label>
+                    <input type="email" id="loginEmail" class="form-input-new" placeholder="Enter your email" autocomplete="email">
+                </div>
+                <div class="form-group-new">
+                    <label class="form-label-new">Password</label>
+                    <input type="password" id="loginPassword" class="form-input-new" placeholder="Enter your password" autocomplete="current-password">
+                </div>
+                <button class="btn-primary-new" id="loginBtn">
+                    <i class="fas fa-sign-in-alt"></i> Sign In
+                </button>
+                <p class="auth-link-new">Don't have an account? <span onclick="switchScreen('signupScreen')">Sign Up</span></p>
+                <p style="text-align:center;margin-top:12px;color:#FFA000;font-weight:600;cursor:pointer;" onclick="forgotPassword()">Forgot Password?</p>
+            </div>
+        </div>
+
+        <!-- Signup Screen -->
+        <div id="signupScreen" class="screen">
+            <div class="auth-screen-new">
+                <div class="auth-header-new">
+                    <div class="logo-wrapper-new"><span class="logo-text-new">B5</span></div>
+                    <h1 class="auth-title-new">Baba567</h1>
+                </div>
+                <div class="form-group-new">
+                    <label class="form-label-new">Username</label>
+                    <input type="text" id="signupUsername" class="form-input-new" placeholder="Choose username">
+                </div>
+                <div class="form-group-new">
+                    <label class="form-label-new">Email Address</label>
+                    <input type="email" id="signupEmail" class="form-input-new" placeholder="Enter your email">
+                </div>
+                <div class="form-group-new">
+                    <label class="form-label-new">Password</label>
+                    <input type="password" id="signupPassword" class="form-input-new" placeholder="Min 6 characters">
+                </div>
+                <button class="btn-primary-new" id="signupBtn">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </button>
+                <p class="auth-link-new">Already have an account? <span onclick="switchScreen('loginScreen')">Sign In</span></p>
+            </div>
+        </div>
+
+        <!-- Home Screen -->
+        <div id="homeScreen" class="screen">
+            <div class="home-header">
+                <div class="menu-icon" onclick="openSideMenu()"><i class="fas fa-bars"></i></div>
+                <div class="brand-center">
+                    <div class="brand-logo-small">B5</div>
+                    <span class="brand-text">Baba567</span>
+                </div>
+                <div class="header-actions">
+                    <div class="wallet-badge-header" id="homeWalletDisplay" onclick="switchScreen('walletScreen')">
+                        <div class="wallet-icon-box"><i class="fas fa-wallet"></i></div>
+                        <span class="currency-symbol">₹</span><span class="balance-amount" id="homeBalance">0.00</span>
+                    </div>
+                    <div class="notif-icon" onclick="showNotifications()"><i class="fas fa-bell"></i><div class="badge-dot" id="notificationDot" style="display:none;"></div></div>
+                </div>
+            </div>
+            <div class="welcome-section">
+                <div class="welcome-text">Welcome to Baba567, Play Big, Win Big<br>GoodLuck All</div>
+            </div>
+            <div class="screen-content">
+                <div class="market-list-section">
+                    <div id="marketList"></div>
+                </div>
+            </div>
+            <div class="bottom-nav">
+                <div class="nav-item active" data-nav="home" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Home</span></div>
+                <div class="nav-item" data-nav="bids" onclick="navigateTo('bids')"><i class="fas fa-receipt"></i><span>My Bids</span></div>
+                <div class="nav-item" data-nav="wallet" onclick="navigateTo('wallet')"><i class="fas fa-wallet"></i><span>Wallet</span></div>
+                <div class="nav-item" data-nav="profile" onclick="navigateTo('profile')"><i class="fas fa-user"></i><span>Profile</span></div>
+            </div>
+        </div>
+
+        <!-- Market Dashboard Screen -->
+        <div id="marketDashboardScreen" class="screen">
+            <div class="dashboard-header">
+                <button class="back-btn" onclick="goBackFromDashboard()"><i class="fas fa-arrow-left"></i></button>
+                <span class="dashboard-title" id="dashboardMarketTitle">Market Dashboard</span>
+                <div class="wallet-badge-header" id="dashboardWalletDisplay" onclick="switchScreen('walletScreen')">
+                    <div class="wallet-icon-box"><i class="fas fa-wallet"></i></div>
+                    <span class="currency-symbol">₹</span><span class="balance-amount" id="dashboardWalletBalance">0.00</span>
+                </div>
+            </div>
+            <div class="screen-content"><div id="dashboardLatestResult" style="display:none;"></div><div class="dashboard-grid" id="dashboardGrid"></div></div>
+        </div>
+
+        <!-- Play Screen -->
+        <div id="playScreen" class="screen">
+            <div class="play-header">
+                <button class="back-btn" onclick="goBackFromPlay()"><i class="fas fa-arrow-left"></i></button>
+                <span class="play-market-title" id="playMarketTitle">Market Name</span>
+                <div class="wallet-badge-header" id="playWalletDisplay" onclick="switchScreen('walletScreen')">
+                    <div class="wallet-icon-box"><i class="fas fa-wallet"></i></div>
+                    <span class="currency-symbol">₹</span><span class="balance-amount" id="playWalletBalance">0.00</span>
+                </div>
+            </div>
+            <div class="screen-content" style="padding-bottom: 0;">
+                <div id="playDynamicContent"></div>
+            </div>
+        </div>
+
+        <!-- My Bids Screen -->
+        <div id="bidsScreen" class="screen"><div class="screen-content"><div class="section" style="padding:20px;"><h2 style="font-weight:800;font-size:24px;margin-bottom:20px;"><i class="fas fa-receipt" style="color:#FFA000;"></i> My Bids History</h2><div id="joinedMatchesList"></div></div></div>
+            <div class="bottom-nav">
+                <div class="nav-item" data-nav="home" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Home</span></div>
+                <div class="nav-item active" data-nav="bids" onclick="navigateTo('bids')"><i class="fas fa-receipt"></i><span>My Bids</span></div>
+                <div class="nav-item" data-nav="wallet" onclick="navigateTo('wallet')"><i class="fas fa-wallet"></i><span>Wallet</span></div>
+                <div class="nav-item" data-nav="profile" onclick="navigateTo('profile')"><i class="fas fa-user"></i><span>Profile</span></div>
+            </div>
+        </div>
+
+        <!-- Wallet Screen -->
+        <div id="walletScreen" class="screen"><div class="screen-content"><div class="section" style="padding:20px;"><div class="balance-card"><div class="balance-label">WALLET BALANCE</div><div class="balance-amount" id="walletBalance">₹0</div><div class="user-id">ID: <span id="walletUserId">-</span></div></div><div class="wallet-actions"><button class="wallet-btn add-money-btn" onclick="openAddMoneyModal()"><i class="fas fa-plus-circle"></i> Deposit Money</button><button class="wallet-btn withdraw-btn" onclick="openWithdrawModal()"><i class="fas fa-arrow-down"></i> Withdraw</button></div><h3 style="font-weight:700;margin-bottom:16px;">Transaction History</h3><div id="transactionList"></div></div></div>
+            <div class="bottom-nav">
+                <div class="nav-item" data-nav="home" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Home</span></div>
+                <div class="nav-item" data-nav="bids" onclick="navigateTo('bids')"><i class="fas fa-receipt"></i><span>My Bids</span></div>
+                <div class="nav-item active" data-nav="wallet" onclick="navigateTo('wallet')"><i class="fas fa-wallet"></i><span>Wallet</span></div>
+                <div class="nav-item" data-nav="profile" onclick="navigateTo('profile')"><i class="fas fa-user"></i><span>Profile</span></div>
+            </div>
+        </div>
+
+        <!-- Profile Screen -->
+        <div id="profileScreen" class="screen"><div class="screen-content"><div class="section" style="padding:20px;"><div style="text-align:center;margin-bottom:30px;"><div class="avatar-circle" id="profileAvatar" style="width:80px;height:80px;font-size:32px;margin:0 auto 16px;background:linear-gradient(135deg,#FFC107,#FFA000);border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-weight:800;">U</div><h2 style="font-weight:800;font-size:24px;" id="profileUsername">Player</h2><p style="color:var(--gray-500);margin-top:4px;">Player ID: <span id="profileUserId">-</span></p></div><button class="btn btn-primary" style="margin-bottom:12px;" onclick="openEditProfileModal()"><i class="fas fa-edit"></i> Edit Profile</button><button class="btn btn-outline" style="margin-bottom:12px;" onclick="changeUserPassword()"><i class="fas fa-lock"></i> Change Password</button><button class="btn btn-outline" style="margin-bottom:12px;color:var(--error);border-color:var(--error);" onclick="logoutUser()"><i class="fas fa-sign-out-alt"></i> Logout</button></div></div>
+            <div class="bottom-nav">
+                <div class="nav-item" data-nav="home" onclick="navigateTo('home')"><i class="fas fa-home"></i><span>Home</span></div>
+                <div class="nav-item" data-nav="bids" onclick="navigateTo('bids')"><i class="fas fa-receipt"></i><span>My Bids</span></div>
+                <div class="nav-item" data-nav="wallet" onclick="navigateTo('wallet')"><i class="fas fa-wallet"></i><span>Wallet</span></div>
+                <div class="nav-item active" data-nav="profile" onclick="navigateTo('profile')"><i class="fas fa-user"></i><span>Profile</span></div>
+            </div>
+        </div>
+
+        <!-- Win Ratio / Game Rates Screen -->
+        <div id="winRatioScreen" class="screen">
+            <div class="win-ratio-screen">
+                <div class="win-ratio-header">
+                    <button class="win-ratio-back" onclick="goBackFromWinRatio()"><i class="fas fa-arrow-left"></i></button>
+                    <span class="win-ratio-title">Game Win Ratio</span>
+                </div>
+                <div class="win-ratio-content">
+                    <div class="win-ratio-card">
+                        <div class="win-ratio-heading">Game Win Ratio For All Bids</div>
+                        
+                        <div class="win-ratio-item">
+                            <span class="win-ratio-label">Single Digit</span>
+                            <span class="win-ratio-rate">₹1 Ka</span>
+                            <span class="win-ratio-value">₹9</span>
+                        </div>
+                        
+                        <div class="win-ratio-item">
+                            <span class="win-ratio-label">Jodi Digit</span>
+                            <span class="win-ratio-rate">₹1 Ka</span>
+                            <span class="win-ratio-value">₹90</span>
+                        </div>
+                        
+                        <div class="win-ratio-item">
+                            <span class="win-ratio-label">Single Pana</span>
+                            <span class="win-ratio-rate">₹1 Ka</span>
+                            <span class="win-ratio-value">₹145</span>
+                        </div>
+                        
+                        <div class="win-ratio-item">
+                            <span class="win-ratio-label">Double Pana</span>
+                            <span class="win-ratio-rate">₹1 Ka</span>
+                            <span class="win-ratio-value">₹290</span>
+                        </div>
+                        
+                        <div class="win-ratio-item">
+                            <span class="win-ratio-label">Tripple Pana</span>
+                            <span class="win-ratio-rate">₹1 Ka</span>
+                            <span class="win-ratio-value">₹720</span>
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notifications Screen -->
+        <div id="notificationsScreen" class="screen">
+            <div class="win-ratio-header">
+                <button class="win-ratio-back" onclick="goBackFromNotifications()"><i class="fas fa-arrow-left"></i></button>
+                <span class="win-ratio-title">Notifications</span>
+            </div>
+            <div class="screen-content" style="padding:16px;">
+                <div id="latestAdminUpdateCard"></div>
+                <div id="notificationsList"></div>
+            </div>
+        </div>
+
+        <!-- Support Screen -->
+        <div id="supportScreen" class="screen">
+            <div class="win-ratio-header">
+                <button class="win-ratio-back" onclick="goBackFromSupport()"><i class="fas fa-arrow-left"></i></button>
+                <span class="win-ratio-title">Support</span>
+            </div>
+            <div class="screen-content" style="padding:20px;">
+                <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 16px rgba(0,0,0,0.06); text-align: center;">
+                    <div style="width: 70px; height: 70px; background: #FFF8E1; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                        <i class="fas fa-headset" style="font-size: 30px; color: #FFA000;"></i>
+                    </div>
+                    <h3 style="font-weight: 800; font-size: 20px; color: #1E293B; margin-bottom: 8px;">Need Help?</h3>
+                    <p style="font-size: 14px; color: #64748B; margin-bottom: 24px;">Contact us on WhatsApp for any queries or issues.</p>
+                    
+                    <a href="https://wa.me/919373523491" target="_blank" style="text-decoration: none; display: block; width: 100%; padding: 16px; border-radius: 30px; background: #25D366; color: white; font-weight: 800; font-size: 16px; box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3); cursor: pointer; border: none; margin-bottom: 12px;">
+                        <i class="fab fa-whatsapp" style="margin-right: 8px;"></i> Chat on WhatsApp
+                    </a>
+                    
+                    <a href="tel:+919373523491" style="text-decoration: none; display: block; width: 100%; padding: 16px; border-radius: 30px; background: #FFC107; color: white; font-weight: 800; font-size: 16px; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3); cursor: pointer; border: none;">
+                        <i class="fas fa-phone-alt" style="margin-right: 8px;"></i> Call Support
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SIDE MENU DRAWER ===== -->
+    <div class="side-menu-overlay" id="sideMenuOverlay" onclick="closeSideMenu()"></div>
+    <div class="side-menu-drawer" id="sideMenuDrawer">
+        <div class="side-menu-header">
+            <div class="side-menu-avatar" id="sideMenuAvatar">U</div>
+            <div class="side-menu-username" id="sideMenuUsername">PLAYER</div>
+            <div class="side-menu-balance">Balance: <span id="sideMenuBalance">₹0.00</span></div>
+        </div>
+        
+        <div class="side-menu-items">
+            <div class="side-menu-item" onclick="sideMenuNavigate('profile')">
+                <i class="fas fa-user"></i>
+                <span>Profile</span>
+                <i class="fas fa-chevron-right side-menu-arrow"></i>
+            </div>
+            <div class="side-menu-item" onclick="sideMenuNavigate('transactions')">
+                <i class="fas fa-history"></i>
+                <span>Transaction History</span>
+                <i class="fas fa-chevron-right side-menu-arrow"></i>
+            </div>
+            <div class="side-menu-item" onclick="sideMenuNavigate('bids')">
+                <i class="fas fa-receipt"></i>
+                <span>My Bids History</span>
+                <i class="fas fa-chevron-right side-menu-arrow"></i>
+            </div>
+            <div class="side-menu-item" onclick="sideMenuNavigate('winRatio')">
+                <i class="fas fa-gamepad"></i>
+                <span>Game Rates</span>
+                <i class="fas fa-chevron-right side-menu-arrow"></i>
+            </div>
+            <div class="side-menu-item" onclick="sideMenuNavigate('support')">
+                <i class="fas fa-headset"></i>
+                <span>Support</span>
+                <i class="fas fa-chevron-right side-menu-arrow"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODALS ===== -->
+
+    <div class="modal-overlay" id="editProfileModal"><div class="modal-content"><h3 class="modal-title">Edit Profile</h3><div class="form-group"><label class="form-label">Username</label><input type="text" id="editUsername" class="form-input" placeholder="New username"></div><button class="btn btn-primary" onclick="saveProfileChanges()">Save Changes</button><button class="btn btn-ghost" style="margin-top:8px;" onclick="closeModal('editProfileModal')">Cancel</button></div></div>
+
+    <div class="modal-overlay" id="changePasswordModal">
+        <div class="modal-content" style="background:#FFF8E1; border-radius:24px; padding:24px; max-width:360px;">
+            <div style="text-align:center; margin-bottom:20px;">
+                <div style="width:56px; height:56px; border-radius:50%; background:#FFC107; display:flex; align-items:center; justify-content:center; margin:0 auto 12px;">
+                    <i class="fas fa-lock" style="color:white; font-size:24px;"></i>
+                </div>
+                <h3 style="font-weight:800; font-size:20px; color:#FFA000; margin:0;">Change Password</h3>
+            </div>
+
+            <div style="position:relative; margin-bottom:14px;">
+                <div style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#FFC107; font-size:16px;">
+                    <i class="fas fa-lock"></i>
+                </div>
+                <input type="password" id="newPasswordInput" placeholder="New Password"
+                    style="width:100%; padding:16px 48px 16px 48px; border:2px solid #FFECB3; border-radius:14px; background:white; font-size:15px; font-weight:600; color:#FFA000; outline:none; font-family:inherit;">
+                <div onclick="togglePasswordVisibility('newPasswordInput', this)" style="position:absolute; right:16px; top:50%; transform:translateY(-50%); color:#FFC107; font-size:16px; cursor:pointer;">
+                    <i class="fas fa-eye-slash"></i>
+                </div>
+            </div>
+
+            <div style="position:relative; margin-bottom:20px;">
+                <div style="position:absolute; left:16px; top:50%; transform:translateY(-50%); color:#FFC107; font-size:16px;">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <input type="password" id="confirmPasswordInput" placeholder="Confirm Password"
+                    style="width:100%; padding:16px 48px 16px 48px; border:2px solid #FFECB3; border-radius:14px; background:white; font-size:15px; font-weight:600; color:#FFA000; outline:none; font-family:inherit;">
+                <div onclick="togglePasswordVisibility('confirmPasswordInput', this)" style="position:absolute; right:16px; top:50%; transform:translateY(-50%); color:#FFC107; font-size:16px; cursor:pointer;">
+                    <i class="fas fa-eye-slash"></i>
+                </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                <button onclick="closeModal('changePasswordModal')"
+                    style="padding:14px; border:2px solid #FFC107; border-radius:14px; background:transparent; color:#FFC107; font-weight:700; font-size:15px; cursor:pointer; font-family:inherit;">
+                    Cancel
+                </button>
+                <button onclick="submitChangePassword()"
+                    style="padding:14px; border:none; border-radius:14px; background:#FFC107; color:white; font-weight:700; font-size:15px; cursor:pointer; font-family:inherit; box-shadow:0 4px 12px rgba(255, 193, 7, 0.3);">
+                    Update
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== NEW DEPOSIT MONEY MODAL ===== -->
+    <div class="modal-overlay" id="addMoneyModal">
+        <div class="deposit-modal-content">
+            <!-- Icon -->
+            <div class="deposit-icon-wrapper">
+                <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 22H46C48.2 22 50 23.8 50 26V44C50 46.2 48.2 48 46 48H14C11.8 48 10 46.2 10 44V26C10 23.8 11.8 22 14 22Z" fill="#FFC107" stroke="#FFA000" stroke-width="2.5" stroke-linejoin="round"/>
+                    <path d="M10 28H50" stroke="#FFA000" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M30 4V14" stroke="#FFA000" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M22 12L30 20L38 12" stroke="#FFA000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M18 38H22" stroke="#FFA000" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M18 42H26" stroke="#FFA000" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M12 10L14 8" stroke="#FFA000" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M48 10L46 8" stroke="#FFA000" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 20L14 22" stroke="#FFA000" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+
+            <h2 class="deposit-title">Deposit Money</h2>
+
+            <div class="deposit-input-wrapper">
+                <input type="number" id="customDeposit" class="deposit-input-field" placeholder="Enter Amount (Min ₹100)" min="100" max="10000">
+            </div>
+
+            <div class="deposit-amount-grid">
+                <button class="deposit-amount-btn" onclick="selectDeposit(100)">₹100</button>
+                <button class="deposit-amount-btn" onclick="selectDeposit(200)">₹200</button>
+                <button class="deposit-amount-btn" onclick="selectDeposit(500)">₹500</button>
+                <button class="deposit-amount-btn" onclick="selectDeposit(1000)">₹1000</button>
+            </div>
+
+            <button class="deposit-submit-btn" onclick="submitDeposit()">
+                <i class="fas fa-th-large"></i> Deposit
+            </button>
+
+            <button class="deposit-cancel-btn" onclick="closeModal('addMoneyModal')">Cancel</button>
+        </div>
+    </div>
+
+    <!-- ===== NEW WITHDRAW MODAL ===== -->
+    <div class="modal-overlay" id="withdrawModal">
+        <div class="withdraw-modal-content">
+            <div class="withdraw-icon-wrapper">
+                <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M14 18H46C48.2 18 50 19.8 50 22V42C50 44.2 48.2 46 46 46H14C11.8 46 10 44.2 10 42V22C10 19.8 11.8 18 14 18Z" fill="#FFC107" stroke="#FFA000" stroke-width="2.5" stroke-linejoin="round"/>
+                    <path d="M22 26H32" stroke="#FFA000" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M22 30H32" stroke="#FFA000" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M22 34H32" stroke="#FFA000" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M22 26V34" stroke="#FFA000" stroke-width="2.5" stroke-linecap="round"/>
+                    <path d="M38 32V22" stroke="#FFA000" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M33 27L38 22L43 27" stroke="#FFA000" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M12 10L14 8" stroke="#FFA000" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M48 10L46 8" stroke="#FFA000" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 20L14 18" stroke="#FFA000" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </div>
+
+            <h2 class="withdraw-title">Withdraw Money</h2>
+
+            <div class="withdraw-form-group">
+                <label class="withdraw-label">Amount (₹)</label>
+                <input type="number" id="withdrawAmount" class="withdraw-input-field" placeholder="Min ₹500" min="500" max="100000">
+            </div>
+
+            <div class="withdraw-form-group">
+                <label class="withdraw-label">Enter UPI ID</label>
+                <input type="text" id="withdrawUpiId" class="withdraw-input-field" placeholder="Enter UPI ID">
+                <p class="withdraw-helper-text">Enter your PhonePe/GPay/Paytm UPI ID</p>
+            </div>
+
+            <button class="withdraw-submit-btn" onclick="submitWithdrawal()">
+                <i class="fas fa-paper-plane"></i> Submit Withdrawal
+            </button>
+
+            <button class="withdraw-cancel-btn" onclick="closeModal('withdrawModal')">Cancel</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="resultHistoryModal"><div class="modal-content" style="max-width:400px;"><h3 class="modal-title">📊 Market Results</h3><div id="resultHistoryContent"></div><button class="btn btn-ghost" style="margin-top:12px;width:100%;" onclick="closeModal('resultHistoryModal')">Close</button></div></div>
+
+    <!-- QR CODE MODAL with TIMER -->
+    <div class="modal-overlay" id="qrCodeModal">
+        <div class="modal-content" style="text-align:center; padding: 20px 18px; background: #FFFFFF; border-radius: 24px; max-width: 360px; max-height: 94vh; overflow-y: auto;">
+            
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 14px;">
+                <i class="fas fa-qrcode" style="font-size: 20px; color: #FFC107;"></i>
+                <h3 style="font-weight: 800; margin: 0; color: #1E293B; font-size: 18px;">Complete Your Payment</h3>
+            </div>
+            
+            <div style="background: #FFFFFF; border: 2px dashed #93C5FD; border-radius: 16px; padding: 14px; margin-bottom: 14px; display: flex; align-items: center; justify-content: center;">
+                <img id="depositQRImage" src="" alt="Payment QR Code" style="width: 210px; height: 210px; display: block; background: #FFFFFF; object-fit: contain;">
+            </div>
+
+            <div style="background: #FFFFFF; border: 2px solid #FCD34D; border-radius: 12px; padding: 8px 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <i class="fas fa-clock" style="color: #FFA000; font-size: 15px;"></i>
+                <span style="font-size: 12px; color: #92400E; font-weight: 700;">Time Left:</span>
+                <span id="paymentTimerDisplay" style="font-size: 18px; color: #FFC107; font-weight: 900; font-family: 'Courier New', monospace; letter-spacing: 1px;">5:00</span>
+            </div>
+
+            <p style="font-size: 15px; color: #1E293B; margin-bottom: 12px; font-weight: 800;">
+                Amount to Pay: <strong id="qrAmountDisplay" style="color: #0A0A0A; font-size: 22px;">₹0</strong>
+            </p>
+
+            <div style="background: #F1F5F9; border-radius: 12px; padding: 10px; margin-bottom: 12px; display: flex; align-items: center; gap: 10px; text-align: left;">
+                <div style="flex-shrink: 0; width: 36px; height: 36px; background: #FFFFFF; border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">
+                    <i class="fas fa-mobile-alt" style="font-size: 18px; color: #1E293B;"></i>
+                </div>
+                <p style="font-size: 11px; color: #1E293B; margin: 0; font-weight: 600; line-height: 1.4;">
+                    Take This QR Code Screenshot And Complete Payment And Enter 12 Digit UTR Number Here
+                </p>
+            </div>
+
+            <div style="background: #F1F5F9; border-radius: 12px; padding: 2px 12px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; text-align: left;">
+                <div style="flex-shrink: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;">
+                    <i class="fas fa-credit-card" style="font-size: 17px; color: #1E293B;"></i>
+                </div>
+                <span style="font-size: 13px; font-weight: 700; color: #DC2626; margin-right: 4px;">*</span>
+                <input type="text" id="upiTransactionId" placeholder="Enter 12 Digit UTR Number" maxlength="12" style="flex: 1; border: none; outline: none; background: transparent; font-size: 13px; font-weight: 600; color: #1E293B; padding: 12px 0; font-family: inherit;">
+            </div>
+
+            <button onclick="confirmPaymentWithTransactionId()" style="width: 100%; padding: 15px; border-radius: 30px; font-weight: 800; font-size: 16px; background: #FFC107; color: white; border: none; box-shadow: 0 4px 12px rgba(255, 193, 7, 0.35); cursor: pointer; letter-spacing: 0.3px;">
+                Submit UTR
+            </button>
+
+            <button style="margin-top: 8px; width: 100%; padding: 10px; font-weight: 700; color: #94A3B8; background: transparent; border: none; cursor: pointer; font-size: 14px;" onclick="showUtrPrompt()">
+                Cancel
+            </button>
+
+        </div>
+    </div>
+
+    <script>
+        // ===== FIREBASE CONFIG =====
+        const firebaseConfig = {
+            apiKey: "AIzaSyDaQdbd9k7TX9o7TMfB15OiwlZPEpowXjc",
+            authDomain: "baba567-1bf4d.firebaseapp.com",
+            databaseURL: "https://baba567-1bf4d-default-rtdb.firebaseio.com",
+            projectId: "baba567-1bf4d",
+            storageBucket: "baba567-1bf4d.firebasestorage.app",
+            messagingSenderId: "857790748762",
+            appId: "1:857790748762:web:c23346193344756f50a063",
+            measurementId: "G-8P9GVEVP1K"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // ===== GLOBAL VARIABLES =====
+        let currentUser = null, userProfile = null, activeListeners = [], depositAmount = 0;
+        let adminUpiId = '9373523491@ibl', adminQrCodeUrl = '', initialAuthCheck = true;
+        let currentPlayMarket = null, currentGameType = null, currentBidType = 'open';
+        let firestoreMarkets = [], marketResultsCache = {};
+        let bidEntries = [];
+        let qrCodeListener = null;
+        let notificationSourceScreen = 'homeScreen';
+        let notificationsListener = null;
+        const MAX_BID_PER_NUMBER = 100;
+
+        // ===== PAYMENT TIMER =====
+        let paymentTimerInterval = null;
+        let paymentTimeLeft = 300;
+
+        const gameTypes = [
+            { id: 'single_digit', name: 'Single Digit', icon: 'fa-hashtag', desc: 'Bet on a single number (0-9)', maxNumbers: 1, range: [0, 9] },
+            { id: 'single_digit_bulk', name: 'Single Digit Bulk', icon: 'fa-layer-group', desc: 'Bet on multiple single numbers', maxNumbers: 10, range: [0, 9] },
+            { id: 'jodi_digit', name: 'Jodi Digit', icon: 'fa-link', desc: 'Bet on a 2-digit pair (00-99)', maxNumbers: 1, range: [0, 99] },
+            { id: 'jodi_digit_bulk', name: 'Jodi Digit Bulk', icon: 'fa-cubes', desc: 'Bet on multiple 2-digit pairs', maxNumbers: 10, range: [0, 99] },
+            { id: 'single_pana', name: 'Single Pana', icon: 'fa-dice-one', desc: 'Bet on a single 3-digit Pana', maxNumbers: 1, range: [100, 999] },
+            { id: 'single_pana_bulk', name: 'Single Pana Bulk', icon: 'fa-dice-multiple', desc: 'Bet on multiple 3-digit Panas', maxNumbers: 10, range: [100, 999] },
+            { id: 'double_pana', name: 'Double Pana', icon: 'fa-dice-two', desc: 'Bet on a double-digit Pana', maxNumbers: 1, range: [100, 999] },
+            { id: 'double_pana_bulk', name: 'Double Pana Bulk', icon: 'fa-th-large', desc: 'Bet on multiple double-digit Panas', maxNumbers: 10, range: [100, 999] },
+            { id: 'triple_pana', name: 'Triple Pana', icon: 'fa-dice-three', desc: 'Bet on a triple-digit Pana', maxNumbers: 1, range: [100, 999] },
+            { id: 'triple_pana_bulk', name: 'Triple Pana Bulk', icon: 'fa-th', desc: 'Bet on multiple triple-digit Panas', maxNumbers: 10, range: [100, 999] }
+        ];
+
+        // ===== UTILITY FUNCTIONS =====
+        function showToast(msg) { const e = document.querySelector('.toast'); if (e) e.remove(); const t = document.createElement('div'); t.className = 'toast'; t.textContent = msg; document.body.appendChild(t); setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; setTimeout(() => t.remove(), 300); }, 3000); }
+        function switchScreen(id) { document.querySelectorAll('.screen').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
+        function navigateTo(s) { const m = { home: 'homeScreen', bids: 'bidsScreen', wallet: 'walletScreen', profile: 'profileScreen' }; switchScreen(m[s]); document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active')); const screenId = m[s]; const screen = document.getElementById(screenId); if (screen) { const items = screen.querySelectorAll('.nav-item'); items.forEach(item => { if (item.dataset.nav === s) item.classList.add('active'); }); } }
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        function capMaxBid(el) {
+            let v = parseInt(el.value) || 0;
+            if (v > MAX_BID_PER_NUMBER) {
+                el.value = MAX_BID_PER_NUMBER;
+                showToast('⚠️ Max ₹' + MAX_BID_PER_NUMBER + ' allowed');
+            }
+            if (v < 0) el.value = '';
+        }
+
+        // ===== PAYMENT TIMER FUNCTIONS =====
+        function startPaymentTimer() {
+            if (paymentTimerInterval) {
+                clearInterval(paymentTimerInterval);
+                paymentTimerInterval = null;
+            }
+            
+            paymentTimeLeft = 300;
+            updateTimerDisplay();
+            
+            paymentTimerInterval = setInterval(() => {
+                paymentTimeLeft--;
+                updateTimerDisplay();
+                
+                if (paymentTimeLeft <= 0) {
+                    clearInterval(paymentTimerInterval);
+                    paymentTimerInterval = null;
+                    handlePaymentTimeout();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const display = document.getElementById('paymentTimerDisplay');
+            if (!display) return;
+            
+            const minutes = Math.floor(paymentTimeLeft / 60);
+            const seconds = paymentTimeLeft % 60;
+            display.textContent = minutes + ':' + String(seconds).padStart(2, '0');
+            
+            display.style.color = '#FFC107';
+            
+            if (paymentTimeLeft <= 60) {
+                display.style.opacity = (paymentTimeLeft % 2 === 0) ? '1' : '0.4';
+            } else {
+                display.style.opacity = '1';
+            }
+        }
+
+        function stopPaymentTimer() {
+            if (paymentTimerInterval) {
+                clearInterval(paymentTimerInterval);
+                paymentTimerInterval = null;
+            }
+        }
+
+        function handlePaymentTimeout() {
+            showToast('⏰ Payment time expired! Returning to home...');
+            
+            closeQRCodeModal();
+            
+            const addMoneyModal = document.getElementById('addMoneyModal');
+            if (addMoneyModal) addMoneyModal.classList.remove('active');
+            
+            depositAmount = 0;
+            const customDeposit = document.getElementById('customDeposit');
+            if (customDeposit) customDeposit.value = '';
+            
+            setTimeout(() => {
+                navigateTo('home');
+            }, 1500);
+        }
+
+        // ===== ADMIN SETTINGS =====
+        async function loadAdminSettings() {
+            try {
+                const d = await db.collection('settings').doc('app').get();
+                if (d.exists) {
+                    const dt = d.data();
+                    adminUpiId = dt.upiId || '9373523491@ibl';
+                    adminQrCodeUrl = dt.qrCodeUrl || dt.qrCode || dt.qr || '';
+                } else {
+                    adminUpiId = '9373523491@ibl';
+                    adminQrCodeUrl = '';
+                }
+            } catch (e) {
+                adminUpiId = '9373523491@ibl';
+                adminQrCodeUrl = '';
+            }
+        }
+
+        // ===== DIRECT DYNAMIC QR CODE (LOCAL GENERATION - NO LOADING) =====
+        function loadQRCodeFromUrl() {
+            const qrImage = document.getElementById('depositQRImage');
+            if (!qrImage) return;
+
+            const amount = depositAmount || 0;
+            const upiId = adminUpiId || '9373523491@ibl';
+
+            if (amount > 0 && upiId) {
+                const upiLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=Baba567&am=${amount}&cu=INR&tn=Deposit%20to%20Baba567`;
+                
+                let qrContainer = document.getElementById('qrCodeContainer');
+                if (!qrContainer) {
+                    qrContainer = document.createElement('div');
+                    qrContainer.id = 'qrCodeContainer';
+                    qrContainer.style.display = 'none';
+                    document.body.appendChild(qrContainer);
+                }
+                
+                qrContainer.innerHTML = '';
+                
+                try {
+                    new QRCode(qrContainer, {
+                        text: upiLink,
+                        width: 210,
+                        height: 210,
+                        colorDark: "#000000",
+                        colorLight: "#ffffff",
+                        correctLevel: QRCode.CorrectLevel.H
+                    });
+
+                    const canvas = qrContainer.querySelector('canvas');
+                    if (canvas) {
+                        const dataUrl = canvas.toDataURL('image/png');
+                        qrImage.src = dataUrl;
+                        qrImage.style.display = 'block';
+                    } else {
+                        qrImage.style.display = 'none';
+                        showToast('⚠️ QR Code generation failed. Contact support.');
+                    }
+                } catch (e) {
+                    console.error("QR Generation Error:", e);
+                    qrImage.style.display = 'none';
+                    showToast('⚠️ QR Code generation failed.');
+                }
+            } else {
+                qrImage.style.display = 'none';
+                showToast('⚠️ QR Code not available. Contact support.');
+            }
+        }
+
+        function setupQRCodeListener() {
+            if (qrCodeListener) { qrCodeListener(); qrCodeListener = null; }
+            qrCodeListener = db.collection('settings').doc('app').onSnapshot((doc) => {
+                if (doc.exists) {
+                    const data = doc.data();
+                    adminUpiId = data.upiId || '9373523491@ibl';
+                    adminQrCodeUrl = data.qrCodeUrl || data.qrCode || data.qr || '';
+                } else {
+                    adminUpiId = '9373523491@ibl';
+                    adminQrCodeUrl = '';
+                }
+            });
+        }
+
+        function handleQRCodeError() {
+            const qrImage = document.getElementById('depositQRImage');
+            qrImage.style.display = 'none';
+            showToast('❌ Failed to load QR Code. Contact support.');
+        }
+
+        function closeQRCodeModal() {
+            document.getElementById('qrCodeModal').classList.remove('active');
+            stopPaymentTimer();
+        }
+
+        function showUtrPrompt() {
+            showToast('Enter Your Payment 12 Digit UTR No');
+            const utrInput = document.getElementById('upiTransactionId');
+            if (utrInput) utrInput.focus();
+        }
+
+        function copyUpiId() {
+            const upiId = document.getElementById('displayUpiId')?.textContent;
+            if (upiId && upiId !== 'Loading...') {
+                navigator.clipboard.writeText(upiId).then(() => {
+                    showToast('✅ UPI ID copied to clipboard!');
+                }).catch(() => {
+                    const tempInput = document.createElement('input');
+                    tempInput.value = upiId;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    showToast('✅ UPI ID copied!');
+                });
+            }
+        }
+
+        // ===== DEPOSIT FUNCTIONS =====
+        function submitDeposit() {
+            const a = Number(document.getElementById('customDeposit').value) || depositAmount;
+            if (!a || a < 100) {
+                showToast('⚠️ Minimum Deposit is ₹100');
+                return;
+            }
+            if (a > 10000) {
+                showToast('⚠️ Maximum Deposit is ₹10,000');
+                return;
+            }
+            if (!currentUser) {
+                showToast('⚠️ Please login first');
+                return;
+            }
+            depositAmount = a;
+            document.getElementById('upiTransactionId').value = '';
+            document.getElementById('qrAmountDisplay').textContent = '₹' + a;
+            document.getElementById('qrCodeModal').classList.add('active');
+            loadQRCodeFromUrl();
+            startPaymentTimer();
+        }
+
+        async function confirmPaymentWithTransactionId() {
+            const transactionId = document.getElementById('upiTransactionId')?.value.trim();
+            if (!transactionId) {
+                showToast('⚠️ Please enter the UPI Transaction ID from your payment app');
+                return;
+            }
+            if (transactionId.length < 10 || transactionId.length > 12) {
+                showToast('⚠️ Transaction ID should be 10-12 digits (found in your UPI app)');
+                return;
+            }
+            if (!/^\d+$/.test(transactionId)) {
+                showToast('⚠️ Transaction ID should contain only numbers');
+                return;
+            }
+            if (!currentUser || !depositAmount) {
+                showToast('⚠️ Session expired. Please try again.');
+                return;
+            }
+            const submitBtn = document.querySelector('#qrCodeModal button[onclick="confirmPaymentWithTransactionId()"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<span class="spinner"></span> Processing...';
+            }
+            try {
+                await db.collection('transactions').add({
+                    userId: currentUser.uid,
+                    userEmail: currentUser.email,
+                    username: userProfile?.username || 'Player',
+                    type: 'credit',
+                    amount: depositAmount,
+                    description: 'Deposit Request',
+                    status: 'pending',
+                    upiId: adminUpiId,
+                    upiTransactionId: transactionId,
+                    needsVerification: true,
+                    verifiedBy: null,
+                    verifiedAt: null,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                stopPaymentTimer();
+                closeQRCodeModal();
+                closeModal('addMoneyModal');
+                showToast('✅ Deposit Request Sent Successfully');
+                depositAmount = 0;
+                document.getElementById('customDeposit').value = '';
+                loadTransactions();
+            } catch (e) {
+                showToast('❌ Error: ' + e.message);
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = 'Submit UTR';
+                }
+            }
+        }
+
+        function selectDeposit(a) { depositAmount = a; document.getElementById('customDeposit').value = a; }
+
+        function openAddMoneyModal() {
+            document.getElementById('addMoneyModal').classList.add('active');
+            document.getElementById('customDeposit').value = '';
+            depositAmount = 0;
+        }
+
+        // ===== WITHDRAWAL FUNCTIONS =====
+        function openWithdrawModal() {
+            if (!currentUser || !userProfile) return;
+            if (userProfile.balance < 500) { showToast('⚠️ Minimum Withdraw is ₹500'); return; }
+            document.getElementById('withdrawAmount').value = ''; document.getElementById('withdrawUpiId').value = '';
+            document.getElementById('withdrawModal').classList.add('active');
+        }
+
+        async function submitWithdrawal() {
+            if (!currentUser || !userProfile) return;
+            const a = Number(document.getElementById('withdrawAmount').value);
+            const u = document.getElementById('withdrawUpiId').value.trim();
+            if (!a || a < 500) { showToast('⚠️ Minimum Withdraw is ₹500'); return; }
+            if (a > 100000) { showToast('⚠️ Maximum Withdraw is ₹1,00,000'); return; }
+            if (a > userProfile.balance) { showToast('⚠️ Insufficient Balance!'); return; }
+            if (!u) { showToast('⚠️ Please enter your UPI ID'); return; }
+            if (!u.includes('@')) { showToast('⚠️ Please enter a valid UPI ID'); return; }
+            try {
+                const batch = db.batch();
+                const w = db.collection('withdrawals').doc();
+                batch.set(w, { userId: currentUser.uid, userEmail: currentUser.email, username: userProfile.username, amount: a, status: 'pending', upiId: u, upiApp: 'user_provided', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                batch.update(db.collection('users').doc(currentUser.uid), { balance: firebase.firestore.FieldValue.increment(-a) });
+                batch.set(db.collection('transactions').doc(), { userId: currentUser.uid, type: 'debit', amount: a, description: 'Withdrawal Request', status: 'pending', withdrawalId: w.id, upiId: u, upiApp: 'user_provided', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                await batch.commit();
+                closeModal('withdrawModal');
+                showToast('✅ Withdrawal submitted! Admin will process.');
+                await loadUserProfile();
+            } catch (e) { showToast('❌ ' + e.message); }
+        }
+
+        // ===== MARKET FUNCTIONS =====
+        function getMarketStatus(openTimeStr, closeTimeStr) {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            const parseTime = (timeStr) => {
+                const [time, period] = timeStr.split(' ');
+                let [hours, minutes] = time.split(':').map(Number);
+                if (period === 'PM' && hours !== 12) hours += 12;
+                if (period === 'AM' && hours === 12) hours = 0;
+                return hours * 60 + minutes;
+            };
+            const openMin = parseTime(openTimeStr);
+            let closeMin = parseTime(closeTimeStr);
+            if (closeMin < openMin) closeMin += 24 * 60;
+            if (currentTime >= closeMin) return 'closed';
+            if (currentTime >= openMin) return 'running_for_close';
+            return 'running_for_open';
+        }
+
+        function canPlaceOpenBid(openTimeStr) {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            const parseTime = (timeStr) => {
+                const [time, period] = timeStr.split(' ');
+                let [hours, minutes] = time.split(':').map(Number);
+                if (period === 'PM' && hours !== 12) hours += 12;
+                if (period === 'AM' && hours === 12) hours = 0;
+                return hours * 60 + minutes;
+            };
+            return currentTime < parseTime(openTimeStr);
+        }
+
+        function canPlaceCloseBid(openTimeStr, closeTimeStr) {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            const parseTime = (timeStr) => {
+                const [time, period] = timeStr.split(' ');
+                let [hours, minutes] = time.split(':').map(Number);
+                if (period === 'PM' && hours !== 12) hours += 12;
+                if (period === 'AM' && hours === 12) hours = 0;
+                return hours * 60 + minutes;
+            };
+            let closeMin = parseTime(closeTimeStr);
+            const openMin = parseTime(openTimeStr);
+            if (closeMin < openMin) closeMin += 24 * 60;
+            return currentTime < closeMin;
+        }
+
+        function isMarketPlayable(openTimeStr, closeTimeStr) {
+            const now = new Date();
+            const currentTime = now.getHours() * 60 + now.getMinutes();
+            const parseTime = (timeStr) => {
+                const [time, period] = timeStr.split(' ');
+                let [hours, minutes] = time.split(':').map(Number);
+                if (period === 'PM' && hours !== 12) hours += 12;
+                if (period === 'AM' && hours === 12) hours = 0;
+                return hours * 60 + minutes;
+            };
+            let closeMin = parseTime(closeTimeStr);
+            const openMin = parseTime(openTimeStr);
+            if (closeMin < openMin) closeMin += 24 * 60;
+            return currentTime < closeMin;
+        }
+
+        async function fetchAllMarketResults(ids) {
+            marketResultsCache = {};
+            if (ids.length === 0) return;
+            try {
+                const s = await db.collection('marketResults').orderBy('createdAt', 'desc').get();
+                const r = {};
+                s.forEach(d => { const dt = d.data(); if (!r[dt.marketId]) r[dt.marketId] = dt; });
+                marketResultsCache = r;
+            } catch (e) {}
+        }
+
+        function sortMarketsByGroup(markets) {
+            const marketOrder = [
+                'shubh morning',
+                'gold morning',
+                'sridevi',
+                'time bazar',
+                'madhur day',
+                'rajdhani day',
+                'milan day',
+                'supreme day',
+                'kalyan',
+                'sridevi night',
+                'madhur night',
+                'supreme night',
+                'milan night',
+                'rajdhani night',
+                'kalyan night',
+                'main bazar'
+            ];
+
+            function getMarketRank(marketName) {
+                const name = (marketName || '').toLowerCase().trim();
+                for (let i = 0; i < marketOrder.length; i++) {
+                    if (name === marketOrder[i]) return i;
+                }
+                for (let i = 0; i < marketOrder.length; i++) {
+                    if (name.includes(marketOrder[i])) return i;
+                }
+                return 999;
+            }
+
+            return markets.slice().sort((a, b) => {
+                const ai = getMarketRank(a.name);
+                const bi = getMarketRank(b.name);
+                if (ai !== bi) return ai - bi;
+                return (a.name || '').localeCompare(b.name || '');
+            });
+        }
+
+        function loadMarkets() {
+            const c = document.getElementById('marketList');
+            if (!c) return;
+            activeListeners = activeListeners.filter(l => { if (typeof l === 'function') l(); return false; });
+            const u = db.collection('markets').where('status', '==', 'active').onSnapshot(async s => {
+                firestoreMarkets = [];
+                const ids = [];
+                s.forEach(d => { const m = d.data(); m.id = d.id; firestoreMarkets.push(m); ids.push(d.id); });
+                await fetchAllMarketResults(ids);
+                renderMarketCards(sortMarketsByGroup(firestoreMarkets), c);
+            });
+            activeListeners.push(u);
+            if (window.marketRefreshInterval) clearInterval(window.marketRefreshInterval);
+            window.marketRefreshInterval = setInterval(() => {
+                const container = document.getElementById('marketList');
+                if (container && firestoreMarkets.length > 0) {
+                    renderMarketCards(sortMarketsByGroup(firestoreMarkets), container);
+                }
+            }, 10000);
+        }
+
+        function renderMarketCards(markets, container) {
+            if (!container) return;
+            container.innerHTML = '';
+            if (markets.length === 0) { container.innerHTML = '<div class="empty-state"><i class="fas fa-chart-line"></i><p>No markets available</p></div>'; return; }
+            markets.forEach(m => {
+                const st = getMarketStatus(m.open, m.close);
+                const playable = isMarketPlayable(m.open, m.close);
+                const card = document.createElement('div');
+                card.className = 'market-card-new';
+
+                let statusHtml = '';
+                if (st === 'closed') {
+                    statusHtml = `<span class="market-status-badge closed">• Closed</span>`;
+                } else if (st === 'running_for_close') {
+                    statusHtml = `<span class="market-status-badge">Running For Close</span>`;
+                } else {
+                    statusHtml = `<span class="market-status-badge">Running For Open</span>`;
+                }
+
+                let rightBtnHtml = '';
+                if (st === 'closed') {
+                    rightBtnHtml = `<button class="play-circle-btn disabled" disabled><i class="fas fa-play"></i></button>`;
+                } else {
+                    rightBtnHtml = `<button class="play-circle-btn ${playable ? '' : 'disabled'}" ${playable ? '' : 'disabled'} onclick="event.stopPropagation(); playMarket('${(m.name || '').replace(/'/g, "\\'")}')">
+                        <i class="fas fa-play"></i>
+                    </button>`;
+                }
+
+                let resultValueHtml = '';
+                if (marketResultsCache[m.id]) {
+                    const result = marketResultsCache[m.id];
+                    const parts = [];
+                    if (result.openResult) parts.push(result.openResult);
+                    if (result.closeResult) parts.push(result.closeResult);
+                    if (result.panaResult) parts.push(result.panaResult);
+                    if (result.jodiResult) parts.push(result.jodiResult);
+                    if (parts.length > 0) resultValueHtml = `<div class="market-result-value">${parts.join('_')}</div>`;
+                }
+                card.innerHTML = `
+                    <div class="market-left">
+                        <div class="market-icon"><i class="fas fa-chart-line"></i></div>
+                        <div class="market-info-text">
+                            <h4>${m.name || 'Unknown'}</h4>
+                            ${resultValueHtml}
+                            ${statusHtml}
+                            <div class="market-timing-row">
+                                <span>🔴 Open Bids: ${m.open || '--'}</span>
+                                <span>🟢 Close Bids: ${m.close || '--'}</span>
+                            </div>
+                        </div>
+                    </div>
+                    ${rightBtnHtml}
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function playMarket(mn) {
+            if (!currentUser) { showToast('⚠️ Please login first'); return; }
+            if (userProfile?.isBanned) { showToast('🚫 Your account is banned'); return; }
+            const mk = firestoreMarkets.find(m => m.name === mn);
+            if (mk && !isMarketPlayable(mk.open, mk.close)) { showToast('⏰ This market is closed!'); return; }
+            currentPlayMarket = mn;
+            document.getElementById('dashboardMarketTitle').textContent = mn + ' Dashboard';
+            document.getElementById('dashboardWalletBalance').textContent = (userProfile?.balance || 0).toFixed(2);
+            const rd = document.getElementById('dashboardLatestResult');
+            if (rd) { rd.style.display = 'none'; rd.innerHTML = ''; }
+            const g = document.getElementById('dashboardGrid');
+            if (g) {
+                g.innerHTML = '';
+                gameTypes.forEach(gt => {
+                    const c = document.createElement('div');
+                    c.className = 'dashboard-card';
+                    const isJodiGame = gt.id === 'jodi_digit' || gt.id === 'jodi_digit_bulk';
+                    const isJodiDisabled = isJodiGame && mk && !canPlaceOpenBid(mk.open);
+                    if (isJodiDisabled) { c.style.opacity = '0.5'; c.style.pointerEvents = 'none'; c.title = 'Jodi Digit bidding closed - Market open time has passed'; } else { c.onclick = () => openGameBetting(gt); }
+                    c.innerHTML = `<div class="dashboard-card-icon"><i class="fas ${gt.icon}"></i></div><div class="dashboard-card-title">${gt.name}</div><div class="dashboard-card-subtitle">${gt.desc}</div>`;
+                    g.appendChild(c);
+                });
+            }
+            switchScreen('marketDashboardScreen');
+        }
+
+        function goBackFromDashboard() { currentPlayMarket = null; switchScreen('homeScreen'); }
+
+        function openGameBetting(gt) {
+            if (!currentPlayMarket) { showToast('⚠️ No market selected'); return; }
+            const mk = firestoreMarkets.find(m => m.name === currentPlayMarket);
+            if (mk && !isMarketPlayable(mk.open, mk.close)) { showToast('⏰ Market closed! Cannot place bids.'); return; }
+            if (gt.id === 'jodi_digit' || gt.id === 'jodi_digit_bulk') {
+                if (mk && !canPlaceOpenBid(mk.open)) { showToast('⏰ Market open time has passed. Jodi Digit bidding closed.'); return; }
+            }
+            currentGameType = gt;
+            bidEntries = [];
+            document.getElementById('playMarketTitle').textContent = currentPlayMarket + ' - ' + gt.name + ' Board';
+            document.getElementById('playWalletBalance').textContent = (userProfile?.balance || 0).toFixed(2);
+            renderGameTypeContent(gt);
+            switchScreen('playScreen');
+        }
+
+        function renderGameTypeContent(gt) {
+            const container = document.getElementById('playDynamicContent');
+            let html = '';
+            switch (gt.id) {
+                case 'single_digit': html = renderSingleDigitBoard(); break;
+                case 'jodi_digit': html = renderJodiDigitBoard(); break;
+                case 'single_pana': html = renderSinglePanaBoard(); break;
+                case 'double_pana': html = renderDoublePanaBoard(); break;
+                case 'triple_pana': html = renderTriplePanaBoard(); break;
+                case 'single_digit_bulk': html = renderSingleDigitBulk(); break;
+                case 'jodi_digit_bulk': html = renderJodiDigitBulk(); break;
+                case 'single_pana_bulk': html = renderSinglePanaBulk(); break;
+                case 'double_pana_bulk': html = renderDoublePanaBulk(); break;
+                case 'triple_pana_bulk': html = renderTriplePanaBulk(); break;
+                default: html = '<p>Select a game type</p>';
+            }
+            container.innerHTML = html;
+        }
+
+        // ===== SINGLE DIGIT BOARD =====
+        function renderSingleDigitBoard() {
+            const order = [1, 6, 2, 7, 3, 8, 4, 9, 5, 0];
+            let html = '<div class="new-game-section">';
+            
+            html += `<div class="game-type-row">
+                <div class="game-type-label">Game Type</div>
+                <div class="game-type-dropdown" onclick="toggleBidTypeDropdown()">
+                    <span id="bidTypeDropdownLabel">${currentBidType === 'open' ? 'Open' : 'Close'}</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>`;
+            
+            html += '<div class="new-digit-grid">';
+            order.forEach(d => {
+                html += `<div class="new-digit-pill" id="digit-pill-${d}">
+                    <div class="new-digit-circle">${d}</div>
+                    <input type="number" class="new-digit-input" id="new-points-${d}" placeholder="Enter Points" min="1" max="${MAX_BID_PER_NUMBER}" oninput="updateSingleDigitBid(${d}, this)">
+                </div>`;
+            });
+            html += '</div>';
+            
+            html += `<div class="new-bottom-bar">
+                <div class="new-bottom-stat">
+                    <div class="new-bottom-stat-label">Bids</div>
+                    <div class="new-bottom-stat-value" id="newBidCount">0</div>
+                </div>
+                <div class="new-bottom-stat">
+                    <div class="new-bottom-stat-label">Points</div>
+                    <div class="new-bottom-stat-value" id="newPointsCount">₹0</div>
+                </div>
+                <button class="new-submit-btn" onclick="submitNewSingleDigitBids()">Submit</button>
+            </div>`;
+            
+            html += '</div>';
+            return html;
+        }
+
+        function toggleBidTypeDropdown() {
+            const mk = firestoreMarkets.find(m => m.name === currentPlayMarket);
+            if (!mk) return;
+            const canOpen = canPlaceOpenBid(mk.open);
+            const canClose = canPlaceCloseBid(mk.open, mk.close);
+            
+            if (canOpen && canClose) {
+                currentBidType = currentBidType === 'open' ? 'close' : 'open';
+                const label = document.getElementById('bidTypeDropdownLabel');
+                if (label) label.textContent = currentBidType === 'open' ? 'Open' : 'Close';
+            } else if (canOpen) {
+                currentBidType = 'open';
+                const label = document.getElementById('bidTypeDropdownLabel');
+                if (label) label.textContent = 'Open';
+                showToast('⚠️ Only Open bidding available');
+            } else if (canClose) {
+                currentBidType = 'close';
+                const label = document.getElementById('bidTypeDropdownLabel');
+                if (label) label.textContent = 'Close';
+                showToast('⚠️ Only Close bidding available');
+            } else {
+                showToast('⏰ Market Closed');
+            }
+        }
+
+        function updateSingleDigitBid(digit, input) {
+            let val = parseInt(input.value) || 0;
+            if (val > MAX_BID_PER_NUMBER) {
+                val = MAX_BID_PER_NUMBER;
+                input.value = val;
+                showToast('⚠️ Max ₹' + MAX_BID_PER_NUMBER + ' allowed');
+            }
+            if (val < 0) { input.value = ''; val = 0; }
+            
+            const pill = document.getElementById(`digit-pill-${digit}`);
+            if (val > 0) pill.classList.add('selected'); else pill.classList.remove('selected');
+            
+            let count = 0, total = 0;
+            const order = [1, 6, 2, 7, 3, 8, 4, 9, 5, 0];
+            order.forEach(d => {
+                const v = parseInt(document.getElementById(`new-points-${d}`)?.value) || 0;
+                if (v > 0) { count++; total += v; }
+            });
+            const bidCountEl = document.getElementById('newBidCount');
+            const pointsCountEl = document.getElementById('newPointsCount');
+            if (bidCountEl) bidCountEl.textContent = count;
+            if (pointsCountEl) pointsCountEl.textContent = '₹' + total;
+        }
+
+        async function submitNewSingleDigitBids() {
+            if (!currentUser || !currentPlayMarket) return showToast('⚠️ Session expired');
+            const mk = firestoreMarkets.find(m => m.name === currentPlayMarket);
+            if (!mk || !isMarketPlayable(mk.open, mk.close)) return showToast('⏰ Market closed');
+            if (currentBidType === 'open' && !canPlaceOpenBid(mk.open)) return showToast('⏰ Open bidding ended');
+            if (currentBidType === 'close' && !canPlaceCloseBid(mk.open, mk.close)) return showToast('⏰ Market closed');
+            
+            const order = [1, 6, 2, 7, 3, 8, 4, 9, 5, 0];
+            let tp = 0; const bids = [];
+            order.forEach(d => {
+                const p = parseInt(document.getElementById(`new-points-${d}`)?.value) || 0;
+                if (p > 0) { bids.push({ number: d.toString(), points: p }); tp += p; }
+            });
+            
+            if (!bids.length) return showToast('⚠️ Enter at least one bid');
+            const overLimit = bids.find(b => b.points > MAX_BID_PER_NUMBER);
+            if (overLimit) return showToast(`⚠️ Max ₹${MAX_BID_PER_NUMBER} per number`);
+            if (userProfile.balance < tp) return showToast('⚠️ Insufficient Balance!');
+            
+            try {
+                const batch = db.batch();
+                batch.update(db.collection('users').doc(currentUser.uid), { balance: firebase.firestore.FieldValue.increment(-tp) });
+                batch.set(db.collection('transactions').doc(), { userId: currentUser.uid, type: 'debit', amount: tp, description: `${currentBidType.toUpperCase()} Single Digit`, market: currentPlayMarket, gameType: 'single_digit', bidType: currentBidType, status: 'success', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                for (const b of bids) batch.set(db.collection('gameBids').doc(), { userId: currentUser.uid, username: userProfile.username, market: currentPlayMarket, gameType: 'single_digit', gameTypeName: 'Single Digit', numbers: [b.number], pointsPerNumber: b.points, totalPoints: b.points, bidType: currentBidType, status: 'active', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                await batch.commit();
+                showToast(`✅ ${bids.length} bids placed! ₹${tp}`);
+                userProfile.balance -= tp;
+                updateProfileUI();
+                bidEntries = [];
+                setTimeout(() => { document.getElementById('dashboardWalletBalance').textContent = userProfile.balance.toFixed(2); switchScreen('marketDashboardScreen'); }, 1500);
+            } catch (e) { showToast('❌ ' + e.message); }
+        }
+
+        // ===== JODI DIGIT BOARD =====
+        function renderJodiDigitBoard() {
+            let html = '<div class="new-game-section">';
+            
+            html += `<div class="jodi-input-box">
+                <div class="jodi-input-row">
+                    <div class="jodi-input-label">Jodi Digit</div>
+                    <input type="number" class="jodi-input-field" id="newJodiDigitInput" placeholder="" min="0" max="99">
+                </div>
+                <div class="jodi-input-row">
+                    <div class="jodi-input-label">Enter Points</div>
+                    <input type="number" class="jodi-input-field" id="newJodiPointsInput" placeholder="" min="1" max="${MAX_BID_PER_NUMBER}">
+                </div>
+                <button class="jodi-add-btn" onclick="addNewJodiEntry()">Add More</button>
+            </div>`;
+            
+            html += `<table style="width:100%; border-collapse:collapse; margin-bottom:16px; table-layout:fixed;">
+                <thead>
+                    <tr>
+                        <th style="text-align:center; padding:12px 4px; font-size:14px; font-weight:700; color:#0F172A; border-bottom:1px solid #E2E8F0; width:33%;">Jodi Digit</th>
+                        <th style="text-align:center; padding:12px 4px; font-size:14px; font-weight:700; color:#0F172A; border-bottom:1px solid #E2E8F0; width:33%;">Points</th>
+                        <th style="text-align:right; padding:12px 4px; font-size:14px; font-weight:700; color:#0F172A; border-bottom:1px solid #E2E8F0; width:34%;">Game Type</th>
+                    </tr>
+                </thead>
+                <tbody id="newJodiEntriesList"></tbody>
+            </table>`;
+            
+            html += `<div class="new-bottom-bar" style="position:fixed;bottom:0;left:0;right:0;background:#F0F4F8;">
+                <div class="new-bottom-stat">
+                    <div class="new-bottom-stat-label">Bids</div>
+                    <div class="new-bottom-stat-value" id="newJodiBidCount">0</div>
+                </div>
+                <div class="new-bottom-stat">
+                    <div class="new-bottom-stat-label">Points</div>
+                    <div class="new-bottom-stat-value" id="newJodiPointsCount">₹0</div>
+                </div>
+                <button class="new-submit-btn" onclick="submitNewJodiBids()">Submit</button>
+            </div>`;
+            
+            html += '</div>';
+            return html;
+        }
+
+        function addNewJodiEntry() {
+            const d = document.getElementById('newJodiDigitInput').value.trim();
+            const p = parseInt(document.getElementById('newJodiPointsInput').value) || 0;
+            if (!d || d < 0 || d > 99) return showToast('⚠️ Valid Jodi (00-99)');
+            if (p <= 0) return showToast('⚠️ Valid points');
+            if (p > MAX_BID_PER_NUMBER) return showToast(`⚠️ Max ₹${MAX_BID_PER_NUMBER} per Jodi allowed`);
+            bidEntries.push({ number: d.toString().padStart(2, '0'), points: p, type: currentBidType });
+            document.getElementById('newJodiDigitInput').value = '';
+            document.getElementById('newJodiPointsInput').value = '';
+            renderNewJodiEntries();
+        }
+
+        function renderNewJodiEntries() {
+            const c = document.getElementById('newJodiEntriesList');
+            if (!c) return;
+            if (!bidEntries.length) { c.innerHTML = ''; updateNewJodiSummary(); return; }
+            let h = '';
+            bidEntries.forEach((e, i) => {
+                h += `<tr style="border-bottom:1px solid #E2E8F0;">
+                    <td style="padding:12px 4px; font-weight:700; color:#0F172A; font-size:14px; text-align:center; width:33%;">${e.number}</td>
+                    <td style="padding:12px 4px; font-weight:700; color:#0F172A; font-size:14px; text-align:center; width:33%;">₹${e.points}</td>
+                    <td style="padding:12px 4px; font-weight:700; color:#0F172A; font-size:14px; text-align:right; width:34%;">${e.type.toUpperCase()}
+                        <button style="background:none; border:none; color:#DC2626; margin-left:8px; cursor:pointer;" onclick="removeNewJodiEntry(${i})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            c.innerHTML = h;
+            updateNewJodiSummary();
+        }
+
+        function removeNewJodiEntry(i) { bidEntries.splice(i, 1); renderNewJodiEntries(); }
+
+        function updateNewJodiSummary() {
+            const countEl = document.getElementById('newJodiBidCount');
+            const pointsEl = document.getElementById('newJodiPointsCount');
+            const tp = bidEntries.reduce((a, e) => a + e.points, 0);
+            if (countEl) countEl.textContent = bidEntries.length;
+            if (pointsEl) pointsEl.textContent = '₹' + tp;
+        }
+
+        async function submitNewJodiBids() {
+            if (!currentUser || !currentPlayMarket) return showToast('⚠️ Session expired');
+            const mk = firestoreMarkets.find(m => m.name === currentPlayMarket);
+            if (!mk) return showToast('⏰ Market not found');
+            if (!canPlaceOpenBid(mk.open)) return showToast('⏰ Market open time has passed. Jodi bidding closed.');
+            if (!bidEntries.length) return showToast('⚠️ Add at least one bid');
+            const overLimit = bidEntries.find(b => b.points > MAX_BID_PER_NUMBER);
+            if (overLimit) return showToast(`⚠️ Max ₹${MAX_BID_PER_NUMBER} per Jodi`);
+            const tp = bidEntries.reduce((a, e) => a + e.points, 0);
+            if (userProfile.balance < tp) return showToast('⚠️ Insufficient Balance!');
+            try {
+                const batch = db.batch();
+                batch.update(db.collection('users').doc(currentUser.uid), { balance: firebase.firestore.FieldValue.increment(-tp) });
+                batch.set(db.collection('transactions').doc(), { userId: currentUser.uid, type: 'debit', amount: tp, description: 'Jodi Digit', market: currentPlayMarket, gameType: 'jodi_digit', bidType: currentBidType, status: 'success', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                for (const e of bidEntries) batch.set(db.collection('gameBids').doc(), { userId: currentUser.uid, username: userProfile.username, market: currentPlayMarket, gameType: 'jodi_digit', gameTypeName: 'Jodi Digit', numbers: [e.number], pointsPerNumber: e.points, totalPoints: e.points, bidType: e.type, status: 'active', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                await batch.commit();
+                showToast(`✅ ${bidEntries.length} bids placed! ₹${tp}`);
+                userProfile.balance -= tp;
+                updateProfileUI();
+                bidEntries = [];
+                setTimeout(() => { document.getElementById('dashboardWalletBalance').textContent = userProfile.balance.toFixed(2); switchScreen('marketDashboardScreen'); }, 1500);
+            } catch (e) { showToast('❌ ' + e.message); }
+        }
+
+        // ===== SINGLE DIGIT BULK BOARD =====
+        function renderSingleDigitBulk() {
+            let html = '<div class="new-game-section">';
+            
+            html += `<div class="sdb-input-box">
+                <div class="sdb-input-row">
+                    <div class="sdb-input-label">Game Type</div>
+                    <div class="game-type-dropdown" onclick="toggleBidTypeDropdown()" style="flex:1; justify-content:space-between;">
+                        <span id="bidTypeDropdownLabel">${currentBidType === 'open' ? 'Open' : 'Close'}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+                <div class="sdb-input-row">
+                    <div class="sdb-input-label">Enter Points</div>
+                    <input type="number" class="sdb-input-field" id="sdbPointsInput" placeholder="" min="1" max="${MAX_BID_PER_NUMBER}">
+                </div>
+            </div>`;
+            
+            html += '<div class="sdb-digit-grid">';
+            for (let i = 1; i <= 9; i++) {
+                html += `<button class="sdb-digit-btn" id="sdb-digit-${i}" onclick="toggleSdbDigit(${i})">${i}</button>`;
+            }
+            html += `<button class="sdb-digit-btn zero" id="sdb-digit-0" onclick="toggleSdbDigit(0)">0</button>`;
+            html += '</div>';
+            
+            html += `<div class="new-bottom-bar" style="position:fixed;bottom:0;left:0;right:0;background:#F0F4F8;">
+                <div class="new-bottom-stat">
+                    <div class="new-bottom-stat-label">Bids</div>
+                    <div class="new-bottom-stat-value" id="sdbBidCount">0</div>
+                </div>
+                <div class="new-bottom-stat">
+                    <div class="new-bottom-stat-label">Points</div>
+                    <div class="new-bottom-stat-value" id="sdbPointsCount">₹0</div>
+                </div>
+                <button class="new-submit-btn" onclick="submitSingleDigitBulkBids()">Submit</button>
+            </div>`;
+            
+            html += '</div>';
+            return html;
+        }
+
+        function toggleSdbDigit(digit) {
+            const btn = document.getElementById(`sdb-digit-${digit}`);
+            const p = parseInt(document.getElementById('sdbPointsInput').value) || 0;
+            
+            if (p <= 0) {
+                showToast('⚠️ Enter points first');
+                return;
+            }
+            if (p > MAX_BID_PER_NUMBER) {
+                showToast(`⚠️ Max ₹${MAX_BID_PER_NUMBER} per digit allowed`);
+                return;
+            }
+            
+            const idx = bidEntries.findIndex(e => e.number === digit.toString());
+            if (idx >= 0) {
+                bidEntries.splice(idx, 1);
+                btn.classList.remove('selected');
+            } else {
+                bidEntries.push({ number: digit.toString(), points: p, type: currentBidType });
+                btn.classList.add('selected');
+            }
+            
+            updateSdbSummary();
+        }
+
+        function updateSdbSummary() {
+            const countEl = document.getElementById('sdbBidCount');
+            const pointsEl = document.getElementById('sdbPointsCount');
+            const tp = bidEntries.reduce((a, e) => a + e.points, 0);
+            if (countEl) countEl.textContent = bidEntries.length;
+            if (pointsEl) pointsEl.textContent = '₹' + tp;
+        }
+
+        async function submitSingleDigitBulkBids() {
+            if (!currentUser || !currentPlayMarket) return showToast('⚠️ Session expired');
+            const mk = firestoreMarkets.find(m => m.name === currentPlayMarket);
+            if (!mk || !isMarketPlayable(mk.open, mk.close)) return showToast('⏰ Market closed');
+            if (currentBidType === 'open' && !canPlaceOpenBid(mk.open)) return showToast('⏰ Open bidding ended');
+            if (currentBidType === 'close' && !canPlaceCloseBid(mk.open, mk.close)) return showToast('⏰ Market closed');
+            if (!bidEntries.length) return showToast('⚠️ Select at least one digit');
+            const overLimit = bidEntries.find(b => b.points > MAX_BID_PER_NUMBER);
+            if (overLimit) return showToast(`⚠️ Max ₹${MAX_BID_PER_NUMBER} per digit`);
+            const tp = bidEntries.reduce((a, e) => a + e.points, 0);
+            if (userProfile.balance < tp) return showToast('⚠️ Insufficient Balance!');
+            try {
+                const batch = db.batch();
+                batch.update(db.collection('users').doc(currentUser.uid), { balance: firebase.firestore.FieldValue.increment(-tp) });
+                batch.set(db.collection('transactions').doc(), { userId: currentUser.uid, type: 'debit', amount: tp, description: `${currentBidType.toUpperCase()} Single Digit Bulk`, market: currentPlayMarket, gameType: 'single_digit_bulk', bidType: currentBidType, status: 'success', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                for (const e of bidEntries) batch.set(db.collection('gameBids').doc(), { userId: currentUser.uid, username: userProfile.username, market: currentPlayMarket, gameType: 'single_digit_bulk', gameTypeName: 'Single Digit Bulk', numbers: [e.number], pointsPerNumber: e.points, totalPoints: e.points, bidType: currentBidType, status: 'active', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                await batch.commit();
+                showToast(`✅ ${bidEntries.length} bids placed! ₹${tp}`);
+                userProfile.balance -= tp;
+                updateProfileUI();
+                bidEntries = [];
+                setTimeout(() => { document.getElementById('dashboardWalletBalance').textContent = userProfile.balance.toFixed(2); switchScreen('marketDashboardScreen'); }, 1500);
+            } catch (e) { showToast('❌ ' + e.message); }
+        }
+
+        // ===== JODI DIGIT BULK BOARD =====
+        function renderJodiDigitBulk() {
+            let html = '<div class="new-game-section">';
+            
+            html += `<div class="jdb-input-box">
+                <div class="jdb-input-row">
+                    <div class="jdb-input-label">Enter Points</div>
+                    <input type="number" class="jdb-input-field" id="jdbPointsInput" placeholder="" min="1" max="${MAX_BID_PER_NUMBER}">
+                </div>
+                <div class="jdb-input-row">
+                    <div class="jdb-input-label">Jodi Digit</div>
+                    <input type="number" class="jdb-input-field" id="jdbDigitInput" placeholder="" min="0" max="99">
+                </div>
+                <button class="jdb-add-btn" onclick="addNewJodiBulkEntry()">Add More</button>
+            </div>`;
+            
+            html += `<table style="width:100%; border-collapse:collapse; margin-bottom:16px; table-layout:fixed;">
+                <thead>
+                    <tr>
+                        <th style="text-align:center; padding:12px 4px; font-size:14px; font-weight:700; color:#0F172A; border-bottom:1px solid #E2E8F0; width:33%;">Jodi Digit</th>
+                        <th style="text-align:center; padding:12px 4px; font-size:14px; font-weight:700; color:#0F172A; border-bottom:1px solid #E2E8F0; width:33%;">Points</th>
+                        <th style="text-align:right; padding:12px 4px; font-size:14px; font-weight:700; color:#0F172A; border-bottom:1px solid #E2E8F0; width:34%;">Game Type</th>
+                    </tr>
+                </thead>
+                <tbody id="jdbEntriesList"></tbody>
+            </table>`;
+            
+            html += `<div class="new-bottom-bar" style="position:fixed;bottom:0;left:0;right:0;background:#F0F4F8;">
+                <div class="new-bottom-stat">
+                    <div class="new-bottom-stat-label">Bids</div>
+                    <div class="new-bottom-stat-value" id="jdbBidCount">0</div>
+                </div>
+                <div class="new-bottom-stat">
+                    <div class="new-bottom-stat-label">Points</div>
+                    <div class="new-bottom-stat-value" id="jdbPointsCount">₹0</div>
+                </div>
+                <button class="new-submit-btn" onclick="submitJodiDigitBulkBids()">Submit</button>
+            </div>`;
+            
+            html += '</div>';
+            return html;
+        }
+
+        function addNewJodiBulkEntry() {
+            const d = document.getElementById('jdbDigitInput').value.trim();
+            const p = parseInt(document.getElementById('jdbPointsInput').value) || 0;
+            if (!d || d < 0 || d > 99) return showToast('⚠️ Valid Jodi (00-99)');
+            if (p <= 0) return showToast('⚠️ Valid points');
+            if (p > MAX_BID_PER_NUMBER) return showToast(`⚠️ Max ₹${MAX_BID_PER_NUMBER} per Jodi allowed`);
+            bidEntries.push({ number: d.toString().padStart(2, '0'), points: p, type: currentBidType });
+            document.getElementById('jdbDigitInput').value = '';
+            renderJodiDigitBulkEntries();
+        }
+
+        function renderJodiDigitBulkEntries() {
+            const c = document.getElementById('jdbEntriesList');
+            if (!c) return;
+            if (!bidEntries.length) { c.innerHTML = ''; updateJodiDigitBulkSummary(); return; }
+            let h = '';
+            bidEntries.forEach((e, i) => {
+                h += `<tr style="border-bottom:1px solid #E2E8F0;">
+                    <td style="padding:12px 4px; font-weight:700; color:#0F172A; font-size:14px; text-align:center; width:33%;">${e.number}</td>
+                    <td style="padding:12px 4px; font-weight:700; color:#0F172A; font-size:14px; text-align:center; width:33%;">₹${e.points}</td>
+                    <td style="padding:12px 4px; font-weight:700; color:#0F172A; font-size:14px; text-align:right; width:34%;">${e.type.toUpperCase()}
+                        <button style="background:none; border:none; color:#DC2626; margin-left:8px; cursor:pointer;" onclick="removeJodiDigitBulkEntry(${i})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            c.innerHTML = h;
+            updateJodiDigitBulkSummary();
+        }
+
+        function removeJodiDigitBulkEntry(i) { bidEntries.splice(i, 1); renderJodiDigitBulkEntries(); }
+
+        function updateJodiDigitBulkSummary() {
+            const countEl = document.getElementById('jdbBidCount');
+            const pointsEl = document.getElementById('jdbPointsCount');
+            const tp = bidEntries.reduce((a, e) => a + e.points, 0);
+            if (countEl) countEl.textContent = bidEntries.length;
+            if (pointsEl) pointsEl.textContent = '₹' + tp;
+        }
+
+        async function submitJodiDigitBulkBids() {
+            if (!currentUser || !currentPlayMarket) return showToast('⚠️ Session expired');
+            const mk = firestoreMarkets.find(m => m.name === currentPlayMarket);
+            if (!mk) return showToast('⏰ Market not found');
+            if (!canPlaceOpenBid(mk.open)) return showToast('⏰ Market open time has passed. Jodi bidding closed.');
+            if (!bidEntries.length) return showToast('⚠️ Add at least one bid');
+            const overLimit = bidEntries.find(b => b.points > MAX_BID_PER_NUMBER);
+            if (overLimit) return showToast(`⚠️ Max ₹${MAX_BID_PER_NUMBER} per Jodi`);
+            const tp = bidEntries.reduce((a, e) => a + e.points, 0);
+            if (userProfile.balance < tp) return showToast('⚠️ Insufficient Balance!');
+            try {
+                const batch = db.batch();
+                batch.update(db.collection('users').doc(currentUser.uid), { balance: firebase.firestore.FieldValue.increment(-tp) });
+                batch.set(db.collection('transactions').doc(), { userId: currentUser.uid, type: 'debit', amount: tp, description: 'Jodi Digit Bulk', market: currentPlayMarket, gameType: 'jodi_digit_bulk', bidType: currentBidType, status: 'success', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                for (const e of bidEntries) batch.set(db.collection('gameBids').doc(), { userId: currentUser.uid, username: userProfile.username, market: currentPlayMarket, gameType: 'jodi_digit_bulk', gameTypeName: 'Jodi Digit Bulk', numbers: [e.number], pointsPerNumber: e.points, totalPoints: e.points, bidType: e.type, status: 'active', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                await batch.commit();
+                showToast(`✅ ${bidEntries.length} bids placed! ₹${tp}`);
+                userProfile.balance -= tp;
+                updateProfileUI();
+                bidEntries = [];
+                setTimeout(() => { document.getElementById('dashboardWalletBalance').textContent = userProfile.balance.toFixed(2); switchScreen('marketDashboardScreen'); }, 1500);
+            } catch (e) { showToast('❌ ' + e.message); }
+        }
+
+        // ===== PANA BOARDS =====
+        function renderPanaBoardCommon(gameType, gameLabel, tableHeaderLabel) {
+            let html = '<div class="new-game-section">';
+            
+            html += `<div class="pana-input-box">
+                <div class="pana-input-row">
+                    <div class="pana-input-label">Game Type</div>
+                    <div class="game-type-dropdown" onclick="toggleBidTypeDropdown()" style="flex:1; justify-content:space-between;">
+                        <span id="bidTypeDropdownLabel">${currentBidType === 'open' ? 'Open' : 'Close'}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+                <div class="pana-input-row">
+                    <div class="pana-input-label">${gameLabel}</div>
+                    <input type="number" class="pana-input-field" id="newPanaInput" placeholder="" min="100" max="999">
+                </div>
+                <div class="pana-input-row">
+                    <div class="pana-input-label">Enter Points</div>
+                    <input type="number" class="pana-input-field" id="newPanaPointsInput" placeholder="" min="1" max="${MAX_BID_PER_NUMBER}">
+                </div>
+                <button class="pana-add-btn" onclick="addNewPanaEntry('${gameType}', '${gameLabel}')">Add More</button>
+            </div>`;
+            
+            html += `<div class="pana-table-header">
+                <span>${tableHeaderLabel}</span>
+                <span>Points</span>
+                <span>Game Type</span>
+            </div>`;
+            
+            html += '<div class="pana-entries-list" id="newPanaEntriesList"></div>';
+            
+            html += `<div class="new-bottom-bar" style="position:fixed;bottom:0;left:0;right:0;background:#F0F4F8;">
+                <div class="new-bottom-stat">
+                    <div class="new-bottom-stat-label">Bids</div>
+                    <div class="new-bottom-stat-value" id="newPanaBidCount">0</div>
+                </div>
+                <div class="new-bottom-stat">
+                    <div class="new-bottom-stat-label">Points</div>
+                    <div class="new-bottom-stat-value" id="newPanaPointsCount">₹0</div>
+                </div>
+                <button class="new-submit-btn" onclick="submitNewPanaBids('${gameType}')">Submit</button>
+            </div>`;
+            
+            html += '</div>';
+            return html;
+        }
+
+        function renderSinglePanaBoard() {
+            return renderPanaBoardCommon('single_pana', 'Single Pana', 'SP Pana');
+        }
+
+        function renderDoublePanaBoard() {
+            return renderPanaBoardCommon('double_pana', 'Double Pana', 'DP Pana');
+        }
+
+        function renderTriplePanaBoard() {
+            return renderPanaBoardCommon('triple_pana', 'Triple Pana', 'TP Pana');
+        }
+
+        function addNewPanaEntry(gameType, gameLabel) {
+            const d = document.getElementById('newPanaInput').value.trim();
+            const p = parseInt(document.getElementById('newPanaPointsInput').value) || 0;
+            if (!d || d < 100 || d > 999) return showToast(`⚠️ Valid ${gameLabel} (100-999)`);
+            if (p <= 0) return showToast('⚠️ Valid points');
+            if (p > MAX_BID_PER_NUMBER) return showToast(`⚠️ Max ₹${MAX_BID_PER_NUMBER} per Pana allowed`);
+            bidEntries.push({ number: d, points: p, type: currentBidType, gameType: gameType, gameLabel: gameLabel });
+            document.getElementById('newPanaInput').value = '';
+            document.getElementById('newPanaPointsInput').value = '';
+            renderNewPanaEntries();
+        }
+
+        function renderNewPanaEntries() {
+            const c = document.getElementById('newPanaEntriesList');
+            if (!c) return;
+            if (!bidEntries.length) { c.innerHTML = ''; updateNewPanaSummary(); return; }
+            let h = '<table style="width:100%; border-collapse:collapse; table-layout:fixed;">';
+            bidEntries.forEach((e, i) => {
+                h += `<tr style="border-bottom:1px solid #E2E8F0;">
+                    <td style="padding:12px 4px; font-weight:700; color:#0F172A; font-size:14px; text-align:left; width:33%;">${e.number}</td>
+                    <td style="padding:12px 4px; font-weight:700; color:#0F172A; text-align:center; font-size:14px; width:33%;">₹${e.points}</td>
+                    <td style="padding:12px 4px; font-weight:700; color:#0F172A; text-align:right; font-size:14px; width:34%;">${e.type.toUpperCase()}
+                        <button style="background:none; border:none; color:#DC2626; margin-left:8px; cursor:pointer;" onclick="removeNewPanaEntry(${i})"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            h += '</table>';
+            c.innerHTML = h;
+            updateNewPanaSummary();
+        }
+
+        function removeNewPanaEntry(i) { bidEntries.splice(i, 1); renderNewPanaEntries(); }
+
+        function updateNewPanaSummary() {
+            const countEl = document.getElementById('newPanaBidCount');
+            const pointsEl = document.getElementById('newPanaPointsCount');
+            const tp = bidEntries.reduce((a, e) => a + e.points, 0);
+            if (countEl) countEl.textContent = bidEntries.length;
+            if (pointsEl) pointsEl.textContent = '₹' + tp;
+        }
+
+        async function submitNewPanaBids(gameType) {
+            if (!currentUser || !currentPlayMarket) return showToast('⚠️ Session expired');
+            const mk = firestoreMarkets.find(m => m.name === currentPlayMarket);
+            if (!mk || !isMarketPlayable(mk.open, mk.close)) return showToast('⏰ Market closed');
+            if (currentBidType === 'open' && !canPlaceOpenBid(mk.open)) return showToast('⏰ Open bidding ended');
+            if (currentBidType === 'close' && !canPlaceCloseBid(mk.open, mk.close)) return showToast('⏰ Market closed');
+            if (!bidEntries.length) return showToast('⚠️ Add at least one bid');
+            const overLimit = bidEntries.find(b => b.points > MAX_BID_PER_NUMBER);
+            if (overLimit) return showToast(`⚠️ Max ₹${MAX_BID_PER_NUMBER} per Pana`);
+            const tp = bidEntries.reduce((a, e) => a + e.points, 0);
+            if (userProfile.balance < tp) return showToast('⚠️ Insufficient Balance!');
+            const gn = gameType === 'single_pana' ? 'Single Pana' : gameType === 'double_pana' ? 'Double Pana' : 'Triple Pana';
+            try {
+                const batch = db.batch();
+                batch.update(db.collection('users').doc(currentUser.uid), { balance: firebase.firestore.FieldValue.increment(-tp) });
+                batch.set(db.collection('transactions').doc(), { userId: currentUser.uid, type: 'debit', amount: tp, description: gn, market: currentPlayMarket, gameType: gameType, bidType: currentBidType, status: 'success', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                for (const e of bidEntries) batch.set(db.collection('gameBids').doc(), { userId: currentUser.uid, username: userProfile.username, market: currentPlayMarket, gameType: gameType, gameTypeName: gn, numbers: [e.number], pointsPerNumber: e.points, totalPoints: e.points, bidType: e.type, status: 'active', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                await batch.commit();
+                showToast(`✅ ${bidEntries.length} bids placed! ₹${tp}`);
+                userProfile.balance -= tp;
+                updateProfileUI();
+                bidEntries = [];
+                setTimeout(() => { document.getElementById('dashboardWalletBalance').textContent = userProfile.balance.toFixed(2); switchScreen('marketDashboardScreen'); }, 1500);
+            } catch (e) { showToast('❌ ' + e.message); }
+        }
+
+        // ===== PANA BULK BOARDS =====
+        function renderSinglePanaBulk() {
+            return renderPanaBulkCommon('single_pana_bulk', 'Single Pana', 'SP Pana');
+        }
+
+        function renderDoublePanaBulk() {
+            return renderPanaBulkCommon('double_pana_bulk', 'Double Pana', 'DP Pana');
+        }
+
+        function renderTriplePanaBulk() {
+            return renderPanaBulkCommon('triple_pana_bulk', 'Triple Pana', 'TP Pana');
+        }
+
+        function renderPanaBulkCommon(gameType, gameLabel, tableHeaderLabel) {
+            let html = '<div class="new-game-section">';
+            
+            html += `<div class="pana-bulk-input-box">
+                <div class="pana-bulk-input-row">
+                    <div class="pana-bulk-input-label">Game Type</div>
+                    <div class="game-type-dropdown" onclick="toggleBidTypeDropdown()" style="flex:1; justify-content:space-between;">
+                        <span id="bidTypeDropdownLabel">${currentBidType === 'open' ? 'Open' : 'Close'}</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                </div>
+                <div class="pana-bulk-input-row">
+                    <div class="pana-bulk-input-label">Enter Points</div>
+                    <input type="number" class="pana-bulk-input-field" id="panaBulkPointsInput" placeholder="" min="1" max="${MAX_BID_PER_NUMBER}">
+                </div>
+            </div>`;
+            
+            html += '<div class="pana-bulk-digit-grid">';
+            const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9, 0];
+            digits.forEach(d => {
+                html += `<button class="pana-bulk-digit-btn" id="pana-bulk-digit-${d}" onclick="togglePanaBulkDigit('${d}', '${gameType}')">${d}</button>`;
+            });
+            html += '</div>';
+            
+            html += `<div class="pana-bulk-table-header">
+                <span>${tableHeaderLabel}</span>
+                <span>Points</span>
+                <span>Game Type</span>
+            </div>`;
+            
+            html += '<div class="pana-bulk-entries-list" id="panaBulkEntriesList"></div>';
+            
+            html += `<div class="new-bottom-bar" style="position:fixed;bottom:0;left:0;right:0;background:#F0F4F8;">
+                <div class="new-bottom-stat">
+                    <div class="new-bottom-stat-label">Bids</div>
+                    <div class="new-bottom-stat-value" id="panaBulkBidCount">0</div>
+                </div>
+                <div class="new-bottom-stat">
+                    <div class="new-bottom-stat-label">Points</div>
+                    <div class="new-bottom-stat-value" id="panaBulkPointsCount">₹0</div>
+                </div>
+                <button class="new-submit-btn" onclick="submitPanaBulkBidsNew('${gameType}')">Submit</button>
+            </div>`;
+            
+            html += '</div>';
+            return html;
+        }
+
+        function togglePanaBulkDigit(digit, gameType) {
+            const btn = document.getElementById(`pana-bulk-digit-${digit}`);
+            const p = parseInt(document.getElementById('panaBulkPointsInput').value) || 0;
+            
+            if (p <= 0) {
+                showToast('⚠️ Enter points first');
+                return;
+            }
+            if (p > MAX_BID_PER_NUMBER) {
+                showToast(`⚠️ Max ₹${MAX_BID_PER_NUMBER} per Pana allowed`);
+                return;
+            }
+            
+            const panaCode = digit.toString();
+            
+            const idx = bidEntries.findIndex(e => e.number === panaCode);
+            if (idx >= 0) {
+                bidEntries.splice(idx, 1);
+                btn.classList.remove('selected');
+            } else {
+                bidEntries.push({ number: panaCode, points: p, type: currentBidType, gameType: gameType });
+                btn.classList.add('selected');
+            }
+            
+            renderPanaBulkEntries();
+        }
+
+        function renderPanaBulkEntries() {
+            const c = document.getElementById('panaBulkEntriesList');
+            if (!c) return;
+            if (!bidEntries.length) { c.innerHTML = ''; updatePanaBulkSummary(); return; }
+            let h = '<table style="width:100%; border-collapse:collapse; table-layout:fixed;">';
+            bidEntries.forEach((e, i) => {
+                h += `<tr style="border-bottom:1px solid #E2E8F0;">
+                    <td style="padding:12px 4px; font-weight:700; color:#0F172A; font-size:14px; text-align:left; width:33%;">${e.number}</td>
+                    <td style="padding:12px 4px; font-weight:700; color:#0F172A; text-align:center; font-size:14px; width:33%;">₹${e.points}</td>
+                    <td style="padding:12px 4px; font-weight:700; color:#0F172A; text-align:right; font-size:14px; width:34%;">${e.type.toUpperCase()}
+                        <button style="background:none; border:none; color:#DC2626; margin-left:8px; cursor:pointer;" onclick="removePanaBulkDigit('${e.number}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            h += '</table>';
+            c.innerHTML = h;
+            updatePanaBulkSummary();
+        }
+
+        function removePanaBulkDigit(digit) {
+            const idx = bidEntries.findIndex(e => e.number === digit);
+            if (idx >= 0) {
+                bidEntries.splice(idx, 1);
+                const btn = document.getElementById(`pana-bulk-digit-${digit}`);
+                if (btn) btn.classList.remove('selected');
+            }
+            renderPanaBulkEntries();
+        }
+
+        function updatePanaBulkSummary() {
+            const countEl = document.getElementById('panaBulkBidCount');
+            const pointsEl = document.getElementById('panaBulkPointsCount');
+            const tp = bidEntries.reduce((a, e) => a + e.points, 0);
+            if (countEl) countEl.textContent = bidEntries.length;
+            if (pointsEl) pointsEl.textContent = '₹' + tp;
+        }
+
+        async function submitPanaBulkBidsNew(gameType) {
+            if (!currentUser || !currentPlayMarket) return showToast('⚠️ Session expired');
+            const mk = firestoreMarkets.find(m => m.name === currentPlayMarket);
+            if (!mk || !isMarketPlayable(mk.open, mk.close)) return showToast('⏰ Market closed');
+            if (currentBidType === 'open' && !canPlaceOpenBid(mk.open)) return showToast('⏰ Open bidding ended');
+            if (currentBidType === 'close' && !canPlaceCloseBid(mk.open, mk.close)) return showToast('⏰ Market closed');
+            if (!bidEntries.length) return showToast('⚠️ Select at least one Pana');
+            const overLimit = bidEntries.find(b => b.points > MAX_BID_PER_NUMBER);
+            if (overLimit) return showToast(`⚠️ Max ₹${MAX_BID_PER_NUMBER} per Pana`);
+            const tp = bidEntries.reduce((a, e) => a + e.points, 0);
+            if (userProfile.balance < tp) return showToast('⚠️ Insufficient Balance!');
+            
+            const gn = gameType === 'single_pana_bulk' ? 'Single Pana Bulk' : gameType === 'double_pana_bulk' ? 'Double Pana Bulk' : 'Triple Pana Bulk';
+            
+            try {
+                const batch = db.batch();
+                batch.update(db.collection('users').doc(currentUser.uid), { balance: firebase.firestore.FieldValue.increment(-tp) });
+                batch.set(db.collection('transactions').doc(), { userId: currentUser.uid, type: 'debit', amount: tp, description: gn, market: currentPlayMarket, gameType: gameType, bidType: currentBidType, status: 'success', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                for (const e of bidEntries) batch.set(db.collection('gameBids').doc(), { userId: currentUser.uid, username: userProfile.username, market: currentPlayMarket, gameType: gameType, gameTypeName: gn, numbers: [e.number], pointsPerNumber: e.points, totalPoints: e.points, bidType: e.type, status: 'active', timestamp: firebase.firestore.FieldValue.serverTimestamp() });
+                await batch.commit();
+                showToast(`✅ ${bidEntries.length} bids placed! ₹${tp}`);
+                userProfile.balance -= tp;
+                updateProfileUI();
+                bidEntries = [];
+                setTimeout(() => { document.getElementById('dashboardWalletBalance').textContent = userProfile.balance.toFixed(2); switchScreen('marketDashboardScreen'); }, 1500);
+            } catch (e) { showToast('❌ ' + e.message); }
+        }
+
+        function goBackFromPlay() {
+            currentGameType = null; bidEntries = [];
+            if (currentPlayMarket) { document.getElementById('dashboardWalletBalance').textContent = (userProfile?.balance || 0).toFixed(2); switchScreen('marketDashboardScreen'); } else switchScreen('homeScreen');
+        }
+
+        // ===== MY BIDS =====
+        function loadJoinedMatches() {
+            if (!currentUser) return;
+            const c = document.getElementById('joinedMatchesList');
+            if (!c) return;
+            const u = db.collection('gameBids')
+                .where('userId', '==', currentUser.uid)
+                .limit(100)
+                .onSnapshot(s => {
+                    c.innerHTML = '';
+                    if (s.empty) {
+                        c.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i><p>No bids yet</p></div>';
+                        return;
+                    }
+                    const docs = [];
+                    s.forEach(d => docs.push({ id: d.id, ...d.data() }));
+                    docs.sort((a, b) => {
+                        const ta = a.timestamp?.toDate?.()?.getTime() || a.createdAt?.toDate?.()?.getTime() || 0;
+                        const tb = b.timestamp?.toDate?.()?.getTime() || b.createdAt?.toDate?.()?.getTime() || 0;
+                        return tb - ta;
+                    });
+                    docs.slice(0, 50).forEach(m => {
+                        const card = document.createElement('div');
+                        card.className = 'tournament-card';
+                        const nums = m.numbers ? m.numbers.join('  ') : '-';
+                        const amt = m.totalPoints || m.amount || 0;
+                        
+                        const sb = m.status === 'won' ? 'won' : 'lost';
+                        const statusText = m.status === 'won' ? 'Won' : 'Lost';
+
+                        const tsRaw = m.timestamp || m.createdAt;
+                        let dateStr = 'N/A';
+                        if (tsRaw?.toDate) {
+                            const dt = tsRaw.toDate();
+                            const day = dt.getDate();
+                            const month = dt.getMonth() + 1;
+                            const year = dt.getFullYear();
+                            let hours = dt.getHours();
+                            const mins = dt.getMinutes().toString().padStart(2, '0');
+                            const ampm = hours >= 12 ? 'Pm' : 'Am';
+                            hours = hours % 12 || 12;
+                            dateStr = `${day}/${month}/${year}, ${hours}:${mins} ${ampm}`;
+                        }
+
+                        const winAmt = m.winAmount || 0;
+                        const winHtml = (m.status === 'won' && winAmt > 0) 
+                            ? `<p style="font-size:13px;color:#16A34A;font-weight:800;margin-top:4px;">🏆 Won ₹${winAmt}</p>` 
+                            : '';
+
+                        const badgeHtml = (m.status === 'won' || m.status === 'lost')
+                            ? `<span class="status-badge ${sb}" style="margin-top:8px;display:inline-block;">${statusText}</span>`
+                            : '';
+
+                        card.innerHTML = `
+                            <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+                                <div style="flex:1;min-width:0;">
+                                    <h4 style="font-weight:800;font-size:16px;color:#0F172A;margin-bottom:2px;">${m.market || 'Market'}</h4>
+                                    <p style="font-size:13px;color:var(--gray-500);">${m.gameTypeName || m.gameType || ''} | ${(m.bidType || 'open').toUpperCase()}</p>
+                                    <p style="font-size:14px;color:#0F172A;font-weight:700;margin:2px 0;">Amount ₹${amt}</p>
+                                    ${winHtml}
+                                    <p style="font-size:12px;color:var(--gray-500);margin-top:6px;">${dateStr}</p>
+                                </div>
+                                <div style="text-align:center;flex-shrink:0;">
+                                    <div style="background:linear-gradient(135deg,#FFC107,#FFA000);color:white;font-weight:900;font-size:22px;padding:14px 18px;border-radius:16px;min-width:70px;box-shadow:0 4px 12px rgba(255, 193, 7, 0.3);letter-spacing:1px;">${nums}</div>
+                                    ${badgeHtml}
+                                </div>
+                            </div>`;
+                        c.appendChild(card);
+                    });
+                }, err => {
+                    console.error('My Bids error:', err);
+                    c.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Could not load bids</p><p style="font-size:11px;margin-top:8px;">${err.message}</p></div>`;
+                });
+            activeListeners.push(u);
+        }
+
+        // ===== TRANSACTIONS =====
+        function loadTransactions() {
+            if (!currentUser) return;
+            const c = document.getElementById('transactionList');
+            if (!c) return;
+            const u = db.collection('transactions')
+                .where('userId', '==', currentUser.uid)
+                .limit(100)
+                .onSnapshot(s => {
+                    c.innerHTML = '';
+                    if (s.empty) {
+                        c.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i><p>No transactions</p></div>';
+                        return;
+                    }
+                    const docs = [];
+                    s.forEach(d => docs.push({ id: d.id, ...d.data() }));
+
+                    const filtered = docs.filter(t => {
+                        const desc = (t.description || t.title || '').toLowerCase();
+                        return desc.includes('deposit') || desc.includes('withdraw');
+                    });
+
+                    filtered.sort((a, b) => {
+                        const ta = a.timestamp?.toDate?.()?.getTime() || a.createdAt?.toDate?.()?.getTime() || 0;
+                        const tb = b.timestamp?.toDate?.()?.getTime() || b.createdAt?.toDate?.()?.getTime() || 0;
+                        return tb - ta;
+                    });
+
+                    if (filtered.length === 0) {
+                        c.innerHTML = '<div class="empty-state"><i class="fas fa-receipt"></i><p>No deposit / withdrawal history</p></div>';
+                        return;
+                    }
+
+                    filtered.slice(0, 50).forEach(t => {
+                        const item = document.createElement('div');
+                        item.className = 'transaction-item';
+
+                        const tsRaw = t.timestamp || t.createdAt;
+                        const date = tsRaw?.toDate?.()?.toLocaleString() || 'N/A';
+
+                        const refId = t.upiTransactionId || t.transactionId || t.reference || t.withdrawalId || '';
+                        const refHtml = refId ? `<p style="font-size:11px;color:var(--gray-400);">Ref: ${refId}</p>` : '';
+
+                        const descLower = (t.description || t.title || '').toLowerCase();
+                        let displayTitle;
+                        if (descLower.includes('withdraw')) displayTitle = 'Withdrawal Request';
+                        else if (descLower.includes('deposit')) displayTitle = 'Deposit Request';
+                        else displayTitle = t.description || t.title || 'Transaction';
+
+                        const amt = t.amount || t.transactionAmount || 0;
+                        const statusClass = (t.status || 'pending').toLowerCase();
+                        const statusText = statusClass;
+
+                        item.innerHTML = `
+                            <div class="transaction-info">
+                                <h4>${displayTitle}</h4>
+                                <p>${date}</p>
+                                ${refHtml}
+                            </div>
+                            <div style="text-align:right;">
+                                <div style="font-weight:800;font-size:16px;color:#0A0A0A;">₹${amt}</div>
+                                <span class="status-badge ${statusClass}">${statusText}</span>
+                            </div>`;
+                        c.appendChild(item);
+                    });
+                }, err => {
+                    console.error('Transaction history error:', err);
+                    c.innerHTML = `<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Could not load transactions</p><p style="font-size:11px;margin-top:8px;">${err.message}</p></div>`;
+                });
+            activeListeners.push(u);
+        }
+
+        // ===== USER PROFILE =====
+        async function loadUserProfile() { if (!currentUser) return; try { const d = await db.collection('users').doc(currentUser.uid).get(); if (d.exists) { userProfile = d.data(); updateProfileUI(); } else { await db.collection('users').doc(currentUser.uid).set({ username: currentUser.email?.split('@')[0] || 'Player', email: currentUser.email, balance: 0, uid: currentUser.uid, userId: 'B5' + Date.now().toString(36).toUpperCase(), createdAt: firebase.firestore.FieldValue.serverTimestamp(), totalDeposits: 0, totalWithdrawals: 0, matchesPlayed: 0 }); userProfile = (await db.collection('users').doc(currentUser.uid).get()).data(); updateProfileUI(); } } catch (e) {} }
+
+        function updateProfileUI() {
+            if (!userProfile) return;
+            const u = userProfile.username || 'Player', b = userProfile.balance || 0, id = userProfile.userId || currentUser?.uid?.substring(0, 8) || '-', init = u.charAt(0).toUpperCase();
+            
+            const homeWallet = document.getElementById('homeWalletDisplay');
+            if (homeWallet) homeWallet.innerHTML = '<div class="wallet-icon-box"><i class="fas fa-wallet"></i></div> <span class="currency-symbol">₹</span><span class="balance-amount" id="homeBalance">' + b.toFixed(2) + '</span>';
+            
+            const dashWallet = document.getElementById('dashboardWalletDisplay');
+            if (dashWallet) dashWallet.innerHTML = '<div class="wallet-icon-box"><i class="fas fa-wallet"></i></div> <span class="currency-symbol">₹</span><span class="balance-amount" id="dashboardWalletBalance">' + b.toFixed(2) + '</span>';
+            
+            const playWallet = document.getElementById('playWalletDisplay');
+            if (playWallet) playWallet.innerHTML = '<div class="wallet-icon-box"><i class="fas fa-wallet"></i></div> <span class="currency-symbol">₹</span><span class="balance-amount" id="playWalletBalance">' + b.toFixed(2) + '</span>';
+            
+            document.getElementById('walletBalance') && (document.getElementById('walletBalance').textContent = '₹' + b);
+            document.getElementById('walletUserId') && (document.getElementById('walletUserId').textContent = id);
+            document.getElementById('profileUsername') && (document.getElementById('profileUsername').textContent = u);
+            document.getElementById('profileUserId') && (document.getElementById('profileUserId').textContent = id);
+            const avatar = document.getElementById('profileAvatar'); if (avatar) avatar.textContent = init;
+        }
+
+        // ===== AUTH EVENTS =====
+        document.getElementById('loginBtn').addEventListener('click', async () => {
+            const e = document.getElementById('loginEmail').value.trim();
+            const p = document.getElementById('loginPassword').value;
+            if (!e || !p) { showToast('⚠️ Please fill all fields'); return; }
+            const b = document.getElementById('loginBtn');
+            b.disabled = true;
+            b.innerHTML = '<span class="spinner"></span> Signing in...';
+            try {
+                await auth.signInWithEmailAndPassword(e, p);
+                showToast('✅ Sign in successful!');
+            } catch (er) {
+                let msg = '❌ Login Failed';
+                if (er.code === 'auth/invalid-login-credentials' || er.code === 'auth/wrong-password') msg = '❌ Wrong Password';
+                else if (er.code === 'auth/user-not-found') msg = '❌ User Not Found';
+                else if (er.code === 'auth/invalid-email') msg = '❌ Invalid Email Address';
+                else if (er.code === 'auth/user-disabled') msg = '❌ Account Disabled. Contact Support';
+                else if (er.code === 'auth/too-many-requests') msg = '❌ Too Many Attempts. Try Again Later';
+                else if (er.code === 'auth/network-request-failed') msg = '❌ Network Error. Check Your Internet';
+                else if (er.code === 'auth/missing-password') msg = '❌ Please Enter Password';
+                else if (er.code === 'auth/missing-email') msg = '❌ Please Enter Email';
+                showToast(msg);
+            } finally {
+                b.disabled = false;
+                b.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In';
+            }
+        });
+
+        document.getElementById('signupBtn').addEventListener('click', async () => {
+            const u = document.getElementById('signupUsername').value.trim();
+            const e = document.getElementById('signupEmail').value.trim();
+            const p = document.getElementById('signupPassword').value;
+            if (!u || !e || !p) { showToast('⚠️ Please fill all fields'); return; }
+            if (p.length < 6) { showToast('⚠️ Password must be at least 6 characters'); return; }
+            const b = document.getElementById('signupBtn');
+            b.disabled = true;
+            b.innerHTML = '<span class="spinner"></span> Creating...';
+            try {
+                const c = await auth.createUserWithEmailAndPassword(e, p);
+                await db.collection('users').doc(c.user.uid).set({ username: u, email: e, balance: 0, uid: c.user.uid, userId: 'B5' + Date.now().toString(36).toUpperCase(), createdAt: firebase.firestore.FieldValue.serverTimestamp(), totalDeposits: 0, totalWithdrawals: 0, matchesPlayed: 0 });
+                showToast('✅ Account created successfully!');
+            } catch (er) {
+                let msg = '❌ Signup Failed';
+                if (er.code === 'auth/email-already-in-use') msg = '❌ Email Already Registered';
+                else if (er.code === 'auth/invalid-email') msg = '❌ Invalid Email Address';
+                else if (er.code === 'auth/weak-password') msg = '❌ Password Too Weak (min 6 chars)';
+                else if (er.code === 'auth/network-request-failed') msg = '❌ Network Error. Check Your Internet';
+                else if (er.code === 'auth/operation-not-allowed') msg = '❌ Signup Disabled. Contact Support';
+                showToast(msg);
+            } finally {
+                b.disabled = false;
+                b.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
+            }
+        });
+
+        function forgotPassword() {
+            const e = prompt('Enter your registered email:');
+            if (!e) return;
+            auth.sendPasswordResetEmail(e)
+                .then(() => showToast('✅ Reset email sent! Check your inbox.'))
+                .catch(er => {
+                    let msg = '❌ Failed to send reset email';
+                    if (er.code === 'auth/user-not-found') msg = '❌ User Not Found';
+                    else if (er.code === 'auth/invalid-email') msg = '❌ Invalid Email Address';
+                    else if (er.code === 'auth/network-request-failed') msg = '❌ Network Error';
+                    showToast(msg);
+                });
+        }
+
+        function logoutUser() {
+            if (qrCodeListener) { qrCodeListener(); qrCodeListener = null; }
+            if (notificationsListener) { notificationsListener(); notificationsListener = null; }
+            if (window.marketRefreshInterval) { clearInterval(window.marketRefreshInterval); window.marketRefreshInterval = null; }
+            if (paymentTimerInterval) { clearInterval(paymentTimerInterval); paymentTimerInterval = null; }
+            auth.signOut();
+            currentUser = null; userProfile = null; currentPlayMarket = null; currentGameType = null; bidEntries = [];
+            activeListeners.forEach(u => { if (typeof u === 'function') u(); }); activeListeners = []; marketResultsCache = {};
+            switchScreen('loginScreen');
+        }
+
+        function openEditProfileModal() { document.getElementById('editProfileModal').classList.add('active'); document.getElementById('editUsername').value = userProfile?.username || ''; }
+        async function saveProfileChanges() { const u = document.getElementById('editUsername').value.trim(); if (!u || u.length < 3) { showToast('⚠️ Min 3 chars'); return; } try { await db.collection('users').doc(currentUser.uid).update({ username: u }); closeModal('editProfileModal'); showToast('✅ Profile updated!'); await loadUserProfile(); } catch (e) { showToast('❌ ' + e.message); } }
+
+        function changeUserPassword() {
+            document.getElementById('newPasswordInput').value = '';
+            document.getElementById('confirmPasswordInput').value = '';
+            document.querySelectorAll('#changePasswordModal .fa-eye').forEach(el => {
+                el.classList.remove('fa-eye');
+                el.classList.add('fa-eye-slash');
+            });
+            document.getElementById('newPasswordInput').type = 'password';
+            document.getElementById('confirmPasswordInput').type = 'password';
+            document.getElementById('changePasswordModal').classList.add('active');
+        }
+
+        function togglePasswordVisibility(inputId, iconWrapper) {
+            const input = document.getElementById(inputId);
+            const icon = iconWrapper.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
+            } else {
+                input.type = 'password';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            }
+        }
+
+        async function submitChangePassword() {
+            const newPass = document.getElementById('newPasswordInput').value;
+            const confirmPass = document.getElementById('confirmPasswordInput').value;
+
+            if (!newPass || !confirmPass) { showToast('⚠️ Fill both fields'); return; }
+            if (newPass.length < 6) { showToast('⚠️ Password min 6 characters'); return; }
+            if (newPass !== confirmPass) { showToast('⚠️ Passwords do not match'); return; }
+            if (!currentUser) { showToast('⚠️ Session expired'); return; }
+
+            const btn = document.querySelector('#changePasswordModal button[onclick="submitChangePassword()"]');
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner" style="border-top-color:white;"></span>';
+
+            try {
+                await currentUser.updatePassword(newPass);
+                closeModal('changePasswordModal');
+                showToast('✅ Password changed successfully!');
+            } catch (e) {
+                if (e.code === 'auth/requires-recent-login') showToast('⚠️ Please re-login and try again');
+                else if (e.code === 'auth/weak-password') showToast('❌ Password Too Weak (min 6 chars)');
+                else showToast('❌ Password Change Failed');
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        }
+
+        // ===== NOTIFICATIONS =====
+        function showNotificationDot() { const d = document.getElementById('notificationDot'); if (d) d.style.display = 'block'; }
+        function hideNotificationDot() { const d = document.getElementById('notificationDot'); if (d) d.style.display = 'none'; }
+
+        function showNotifications() {
+            notificationSourceScreen = document.querySelector('.screen.active')?.id || 'homeScreen';
+            switchScreen('notificationsScreen');
+            loadNotifications();
+        }
+
+        function goBackFromNotifications() {
+            switchScreen(notificationSourceScreen || 'homeScreen');
+        }
+
+        function loadNotifications() {
+            const list = document.getElementById('notificationsList');
+            const latestCard = document.getElementById('latestAdminUpdateCard');
+            if (!list) return;
+            if (notificationsListener) { notificationsListener(); notificationsListener = null; }
+
+            notificationsListener = db.collection('notifications')
+                .orderBy('timestamp', 'desc')
+                .limit(50)
+                .onSnapshot(s => {
+                    list.innerHTML = '';
+                    if (latestCard) latestCard.innerHTML = '';
+                    if (s.empty) {
+                        list.innerHTML = '<div class="empty-state"><i class="fas fa-bell-slash"></i><p>No notifications yet</p></div>';
+                        hideNotificationDot();
+                        return;
+                    }
+                    const docs = [];
+                    s.forEach(d => docs.push({ id: d.id, ...d.data() }));
+
+                    if (latestCard) {
+                        const n = docs[0];
+                        latestCard.innerHTML = `
+                            <div class="tournament-card" style="border-left:4px solid var(--primary);">
+                                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                                    <i class="fas fa-bullhorn" style="color:var(--primary-dark);"></i>
+                                    <b style="font-size:14px;">Latest Admin Update</b>
+                                </div>
+                                <h4 style="font-weight:700;margin-bottom:4px;">${n.title || 'Update'}</h4>
+                                <p style="font-size:13px;color:var(--gray-600);">${n.body || n.message || ''}</p>
+                            </div>`;
+                    }
+
+                    docs.slice(1).forEach(n => {
+                        const card = document.createElement('div');
+                        card.className = 'tournament-card';
+                        const ts = n.timestamp?.toDate?.()?.toLocaleString() || '';
+                        card.innerHTML = `
+                            <div style="display:flex;gap:10px;">
+                                <div class="market-icon" style="flex-shrink:0;"><i class="fas fa-bullhorn"></i></div>
+                                <div style="flex:1;">
+                                    <h4 style="font-weight:700;font-size:14px;">${n.title || 'Notification'}</h4>
+                                    <p style="font-size:13px;color:var(--gray-600);margin:4px 0;">${n.body || n.message || ''}</p>
+                                    <p style="font-size:11px;color:var(--gray-500);">${ts}</p>
+                                </div>
+                            </div>`;
+                        list.appendChild(card);
+                    });
+
+                    showNotificationDot();
+                }, err => {
+                    console.error('Notifications error:', err);
+                    list.innerHTML = '<div class="empty-state"><i class="fas fa-exclamation-circle"></i><p>Could not load notifications</p></div>';
+                });
+        }
+
+        function openWinRatioPage() { switchScreen('winRatioScreen'); }
+        function goBackFromWinRatio() { switchScreen('homeScreen'); }
+        
+        function goBackFromSupport() { switchScreen('homeScreen'); }
+
+        // ===== SIDE MENU DRAWER =====
+        function openSideMenu() {
+            const username = document.getElementById('sideMenuUsername');
+            const balance = document.getElementById('sideMenuBalance');
+            const avatar = document.getElementById('sideMenuAvatar');
+            
+            if (userProfile) {
+                if (username) username.textContent = (userProfile.username || 'PLAYER').toUpperCase();
+                if (balance) balance.textContent = '₹' + (userProfile.balance || 0).toFixed(2);
+                if (avatar) avatar.textContent = (userProfile.username || 'U').charAt(0).toUpperCase();
+            } else {
+                if (username) username.textContent = 'PLAYER';
+                if (balance) balance.textContent = '₹0.00';
+                if (avatar) avatar.textContent = 'U';
+            }
+            
+            document.getElementById('sideMenuOverlay').classList.add('active');
+            document.getElementById('sideMenuDrawer').classList.add('active');
+        }
+
+        function closeSideMenu() {
+            document.getElementById('sideMenuOverlay').classList.remove('active');
+            document.getElementById('sideMenuDrawer').classList.remove('active');
+        }
+
+        function sideMenuNavigate(page) {
+            closeSideMenu();
+            setTimeout(() => {
+                if (page === 'profile') {
+                    navigateTo('profile');
+                } else if (page === 'transactions') {
+                    navigateTo('wallet');
+                } else if (page === 'bids') {
+                    navigateTo('bids');
+                } else if (page === 'winRatio') {
+                    switchScreen('winRatioScreen');
+                } else if (page === 'support') {
+                    switchScreen('supportScreen');
+                }
+            }, 250);
+        }
+
+        // ===== AUTH STATE LISTENER =====
+        auth.onAuthStateChanged(async (user) => {
+            if (window.marketRefreshInterval) { clearInterval(window.marketRefreshInterval); window.marketRefreshInterval = null; }
+            activeListeners.forEach(u => { if (typeof u === 'function') u(); }); activeListeners = []; marketResultsCache = {};
+            if (qrCodeListener) { qrCodeListener(); qrCodeListener = null; }
+            if (notificationsListener) { notificationsListener(); notificationsListener = null; }
+            if (paymentTimerInterval) { clearInterval(paymentTimerInterval); paymentTimerInterval = null; }
+            if (user) {
+                currentUser = user;
+                await loadUserProfile();
+                loadMarkets();
+                loadJoinedMatches();
+                loadTransactions();
+                await loadAdminSettings();
+                setupQRCodeListener();
+                navigateTo('home');
+            } else {
+                currentUser = null; userProfile = null;
+                if (!initialAuthCheck) switchScreen('loginScreen');
+            }
+            if (initialAuthCheck) { initialAuthCheck = false; if (!user && document.getElementById('splashScreen').classList.contains('active')) switchScreen('loginScreen'); }
+        });
+    </script>
+</body>
+</html>
